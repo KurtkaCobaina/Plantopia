@@ -1,0 +1,192 @@
+.profile-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.profile-container > h1 {
+    margin: 0 0 24px 0;
+    color: #000;
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.profile-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.field-row {
+    display: flex;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: center;
+}
+
+.field-row:last-child {
+    border-bottom: none;
+}
+
+.field-label {
+    flex: 0 0 40%;
+    font-weight: 500;
+    color: #555;
+    padding-right: 16px;
+    text-align: left;
+    line-height: 1.4;
+}
+
+.field-value {
+    flex: 1;
+    color: #000;
+    word-break: break-word;
+}
+
+.subscription-row {
+    display: flex;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: center;
+}
+
+.subscription-row .field-label {
+    flex: 0 0 40%;
+    font-weight: 500;
+    color: #555;
+    padding-right: 16px;
+    text-align: left;
+    line-height: 1.4;
+}
+
+.subscription-status {
+    flex: 1;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 500;
+    text-align: center;
+    min-width: 80px;
+    display: inline-block;
+}
+
+.subscription-status.active {
+    background-color: transparent;
+    color: #00ff6f;
+    border: 1px solid #00ff6f;
+    padding: 7px 15px;
+}
+
+.subscription-status.inactive {
+    background-color: transparent;
+    color: #ff4d4f;
+    border: 1px solid #ff4d4f;
+    padding: 7px 15px;
+}
+
+.edit-btn {
+    display: block;
+    width: 100%;
+    background-color: #5DD62C;
+    color: #000;
+    border: none;
+    padding: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 16px;
+    transition: background-color 0.2s;
+    margin-top: 16px;
+}
+
+.edit-btn:hover {
+    background-color: #4bc71d;
+}
+/* Добавьте эти стили в ваш ProfilePage.css */
+
+.api-key-section {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    background-color: #ffffff;
+}
+
+.api-key-section h2 {
+    margin: 0 0 16px 0;
+    color: #000;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.api-key-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.api-input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #000;
+    background-color: #fff;
+}
+
+.api-input:focus {
+    outline: none;
+    border-color: #5DD62C;
+    box-shadow: 0 0 0 2px rgba(93, 214, 44, 0.2);
+}
+
+.api-display {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    color: #000;
+    font-family: monospace;
+    letter-spacing: 1px;
+    background-color: #fafafa;
+}
+
+.api-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.edit-api-btn, .save-api-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.edit-api-btn {
+    background-color: #f0f0f0;
+    color: #000;
+    border: 1px solid #ddd;
+}
+
+.edit-api-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.save-api-btn {
+    background-color: #5DD62C;
+    color: #000;
+    border: none;
+}
+
+.save-api-btn:hover {
+    background-color: #4bc71d;
+}

@@ -1,0 +1,269 @@
+/* src/components/PlantDiagnosis.css */
+
+/* Основной контейнер — центрирует всё содержимое */
+.plant-diagnosis-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 120px 20px 40px 20px; /* 120px = высота хедера */
+    background-color: #ffffff;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Заголовок */
+.text-h {
+    color: black;
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Центральный блок — изображение + кнопки */
+.central-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.image-container {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+}
+
+.image-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+}
+
+.image-placeholder {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    padding: 16px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+.file-input-label {
+    position: relative;
+    display: inline-block;
+    width: 200px;
+    height: 40px;
+    background-color: #5DD62C;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    overflow: hidden;
+    text-align: center;
+    line-height: 40px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.file-input-label input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.file-input-label::after {
+    content: "Choose File";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+    padding: 0 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.analyze-btn {
+    width: 200px;
+    height: 40px;
+    background-color: #5DD62C;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Индикатор процесса */
+.loading-placeholder {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 20px;
+}
+
+.loading-content p {
+    margin: 4px 0;
+    color: #555;
+    font-weight: 500;
+}
+
+/* Блок результатов — теперь такой же ширины, как верхняя часть */
+.diagnosis-result {
+    margin-top: 24px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    color: black;
+    width: 100%;
+    max-width: 400px; /* Совпадает с шириной изображения */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.diagnosis-result h2 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.5rem;
+    color: black;
+    text-align: center;
+}
+
+.diagnosis-result p {
+    margin: 8px 0;
+    font-size: 14px;
+    color: black;
+}
+
+.diagnosis-result h3 {
+    margin: 16px 0 8px 0;
+    font-size: 1.1rem;
+    color: black;
+}
+
+/* Статус здоровья — зелёный или красный фон */
+.health-status {
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+    color: black;
+}
+
+.health-status.healthy {
+    background-color: #d1f7d1;
+    border-left: 4px solid #2ecc71;
+}
+
+.health-status.unhealthy {
+    background-color: #fadbd8;
+    border-left: 4px solid #e74c3c;
+}
+
+.health-status p {
+    margin: 8px 0;
+    font-weight: bold;
+    color: black;
+}
+
+.health-status h4 {
+    margin: 12px 0 8px 0;
+    font-size: 0.9rem;
+    color: black;
+}
+
+.health-status ul {
+    padding-left: 20px;
+    margin: 8px 0;
+    color: black;
+}
+
+.health-status li {
+    margin: 4px 0;
+    font-size: 14px;
+    color: black;
+}
+
+/* Кнопка сохранения результата */
+.save-result-btn {
+    width: 200px;
+    height: 40px;
+    background-color: #5DD62C;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto 0 auto;
+}
+
+/* Сообщение об ошибке */
+.error-message {
+    margin-top: 24px;
+    padding: 16px;
+    background-color: #fadbd8;
+    border-left: 4px solid #e74c3c;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.error-message p {
+    margin: 0;
+    color: #c0392b;
+    font-weight: bold;
+}

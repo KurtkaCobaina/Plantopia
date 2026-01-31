@@ -1,0 +1,136 @@
+.ndvi-maps-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 120px 20px 40px 20px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.page-title3 {
+    color: black;
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.back-btn {
+    background-color: #5DD62C;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.back-btn:hover {
+    background-color: #56BF2B;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.ndvi-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    font-size: 14px;
+}
+
+.ndvi-table th,
+.ndvi-table td {
+    padding: 12px 10px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.ndvi-table th {
+    background-color: #ffffff;
+    font-weight: 600;
+    color: #333;
+}
+
+.map-preview-cell {
+    width: 200px;
+}
+
+.map-preview {
+    max-width: 100%;
+    max-height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.map-link {
+    display: inline-block;
+}
+
+.no-map {
+    color: #888;
+    font-style: italic;
+}
+
+.filter-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.filter-badge.applied {
+    background-color: #e8f5e9;
+    color: #2ecc71;
+}
+
+.filter-badge.not-applied {
+    background-color: #ffebee;
+    color: #e74c3c;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .ndvi-maps-container {
+        padding: 120px 10px 30px 10px;
+    }
+
+    .ndvi-table {
+        font-size: 13px;
+    }
+
+    .ndvi-table th,
+    .ndvi-table td {
+        padding: 10px 6px;
+    }
+
+    .map-preview-cell {
+        width: 120px;
+    }
+
+    .map-preview {
+        max-height: 80px;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .back-btn {
+        align-self: center;
+        width: fit-content;
+    }
+}

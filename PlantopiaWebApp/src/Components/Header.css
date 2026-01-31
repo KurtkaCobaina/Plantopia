@@ -1,0 +1,166 @@
+/* Обнуляем отступы по умолчанию */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fff;
+}
+
+.header {
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    border-bottom: 1px solid #ccc;
+    padding: 15px 30px; /* Увеличили отступы для большей высоты */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: 100px; /* Фиксированная высота для стабильности */
+}
+
+.header-offset {
+    height: 100px; /* Высота хедера */
+}
+
+.header-greeting {
+    font-size: 20px;
+    font-weight: 500;
+    color: #333;
+    margin-left: 20px; /* Отступ слева */
+}
+
+.nav-menu ul {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    margin-right: 20px; /* Отступ справа для навигации */
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    padding: 5px 10px;
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: #5DD62C;
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+    margin-right: 20px; /* Отступ справа для кнопки */
+}
+
+/* Мобильная версия */
+@media screen and (max-width: 768px) {
+    .header {
+        padding: 15px 20px;
+        height: auto;
+        flex-wrap: wrap;
+    }
+
+    .header-offset {
+        height: auto;
+        min-height: 100px; /* Минимальная высота для мобильных */
+    }
+
+    .header-greeting {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .menu-toggle {
+        display: block;
+        margin-right: 0;
+        margin-left: auto;
+    }
+
+    .nav-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        z-index: 999;
+    }
+
+    .nav-menu.open {
+        max-height: 300px;
+    }
+
+    .nav-menu ul {
+        flex-direction: column;
+        padding: 10px 0;
+        gap: 0;
+    }
+
+    .nav-menu li {
+        width: 100%;
+    }
+
+    .nav-link, .inactive-link {
+        display: block;
+        padding: 10px 20px;
+        border-bottom: 1px solid #eee;
+    }
+}
+/* Добавьте эти стили в ваш Header.css */
+
+/* Удаляем отдельные стили для .logout-btn и используем уже существующий .nav-link */
+.logout-btn {
+    background: none;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    padding: 5px 10px;
+    transition: color 0.2s;
+    border-radius: 6px;
+}
+
+/* Сделаем кнопку выхода как обычную ссылку в меню */
+.nav-link.logout-btn {
+   background: #5DD62C;
+    text-decoration: none;
+    color: black;
+    font-weight: 500;
+    padding: 5px 10px;
+    transition: color 0.2s;
+}
+
+.nav-link.logout-btn:hover {
+  background: #56BF2B;
+    color: black;
+}
+
+/* Для мобильной версии */
+@media screen and (max-width: 768px) {
+    .nav-link.logout-btn {
+        display: block;
+        padding: 10px 20px;
+        text-align: left;
+        width: 100%;
+        background-color: transparent;
+        border-bottom: 1px solid #eee;
+    }
+}
