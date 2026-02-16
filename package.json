@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@turf/boolean-valid": "^7.3.4",
+    "@types/geojson": "^7946.0.16",
+    "i18next": "^25.8.7",
+    "maplibre-gl": "^4.7.1",
+    "react-i18next": "^16.5.4",
+    "react-map-gl": "^6.1.21"
+  }
+}
