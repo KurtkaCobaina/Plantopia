@@ -1,4 +1,4 @@
-// @ts-ignore
+
 export interface User {
     id: number;
     email: string;
@@ -11,6 +11,6 @@ export interface User {
     api_key: string;
     created_at: string;
     updated_at: string;
-
+    ndvi_api_key: string;
 
 }

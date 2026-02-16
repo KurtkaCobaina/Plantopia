@@ -1,19 +1,23 @@
-// src/components/PlantDiagnosis.tsx
 import React, { useState, useRef, type ChangeEvent } from 'react';
 import { diagnosePlant } from './api.ts';
 import type { PlantIdResult } from './PlantDiagnosisInterfaces.ts';
 import './PlantDiagnosis.css';
+import { useI18n } from '../../I18nContext';
 
 const PlantDiagnosis: React.FC = () => {
+    const { t } = useI18n();
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [diagnosis, setDiagnosis] = useState<PlantIdResult | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const originalFile = useRef<File | null>(null);
 
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            originalFile.current = file;
             setDiagnosis(null);
             setErrorMessage(null);
 
@@ -26,8 +30,8 @@ const PlantDiagnosis: React.FC = () => {
     };
 
     const analyzeImage = async () => {
-        if (!selectedImage || !fileInputRef.current?.files?.[0]) {
-            setErrorMessage("Please select an image first.");
+        if (!originalFile.current) {
+            setErrorMessage(t('plantDiagnosis.selectImageFirst'));
             return;
         }
 
@@ -37,23 +41,142 @@ const PlantDiagnosis: React.FC = () => {
 
         try {
             const request = {
-                image: fileInputRef.current.files![0],
+                image: originalFile.current,
             };
 
             const result = await diagnosePlant(request);
             setDiagnosis(result);
             if (!result.success) {
-                setErrorMessage(result.error || "Diagnosis was unsuccessful.");
+                setErrorMessage(
+                    result.error || t('plantDiagnosis.diagnosisFailed'),
+                );
             }
         } catch (err) {
-            console.error("Unexpected error during diagnosis:", err);
-            setErrorMessage(err instanceof Error ? err.message : "An unexpected error occurred.");
+            console.error('Unexpected error during diagnosis:', err);
+            setErrorMessage(
+                err instanceof Error
+                    ? err.message
+                    : t('plantDiagnosis.unexpectedError'),
+            );
         } finally {
             setIsProcessing(false);
         }
     };
 
-    // Вспомогательные переменные для безопасного доступа к данным
+    // === Загрузка изображения ===
+    const uploadImageAndGetUrl = async (file: File): Promise<string> => {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch('/api/upload/image', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error(t('plantDiagnosis.uploadFailed'));
+        }
+
+        const data = await response.json();
+        return data.url;
+    };
+
+    // === Сохранение диагноза ===
+    const saveDiagnosis = async () => {
+        if (!diagnosis?.success || !diagnosis.data || !originalFile.current) {
+            alert(t('plantDiagnosis.noDiagnosisToSave'));
+            return;
+        }
+
+        try {
+            setIsSaving(true);
+
+            // 1. Получаем userId из sessionStorage
+            const userIdStr = sessionStorage.getItem("userId");
+            if (!userIdStr) {
+                alert(t('plantDiagnosis.notLoggedIn'));
+                return;
+            }
+            const userId = parseInt(userIdStr, 10);
+            if (isNaN(userId)) {
+                alert(t('plantDiagnosis.invalidUserId'));
+                return;
+            }
+
+            // 2. Загружаем изображение
+            const imageUrl = await uploadImageAndGetUrl(originalFile.current);
+
+            // 3. Преобразуем данные в формат, ожидаемый бэкендом
+            const { classification, healthAssessment } = diagnosis.data;
+
+            if (!classification) {
+                alert(t('plantDiagnosis.missingClassification'));
+                return;
+            }
+
+            const backendResult: any = {
+                classification: {
+                    suggestions: [
+                        {
+                            name: classification.name,
+                            probability: classification.probability,
+                            ...(classification.plant_details?.common_names
+                                ? { details: { common_names: classification.plant_details.common_names } }
+                                : {}),
+                        },
+                    ],
+                },
+            };
+
+            // Обработка здоровья
+            if (healthAssessment) {
+                backendResult.is_healthy = { binary: healthAssessment.isHealthy };
+
+                if (!healthAssessment.isHealthy && healthAssessment.diseases?.length) {
+                    backendResult.disease = {
+                        suggestions: healthAssessment.diseases.map((d) => ({
+                            name: d.name,
+                            probability: d.probability,
+                        })),
+                    };
+                }
+            } else {
+                // Если healthAssessment отсутствует — считаем здоровым
+                backendResult.is_healthy = { binary: true };
+            }
+
+            // 4. Отправляем данные на сервер
+            const saveResponse = await fetch('/api/diagnoses/save-diagnosis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId,
+                    imageUrl,
+                    result: backendResult,
+                }),
+            });
+
+            if (saveResponse.ok) {
+                alert(t('plantDiagnosis.saveSuccess'));
+            } else {
+                const errorData = await saveResponse.json().catch(() => ({}));
+                alert(
+                    `${t('plantDiagnosis.saveFailedPrefix')} ${
+                        errorData.message || t('common.unknownError')
+                    }`,
+                );
+            }
+        } catch (err) {
+            console.error('Save error:', err);
+            alert(t('plantDiagnosis.saveErrorGeneric'));
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    // Вспомогательные переменные для отображения
     const classification = diagnosis?.data?.classification;
     const prob = classification?.probability;
     const isConfident = prob != null && prob >= 0.7;
@@ -61,19 +184,23 @@ const PlantDiagnosis: React.FC = () => {
 
     return (
         <div className="plant-diagnosis-container">
-            <h1 className="text-h">Plant Analyzer</h1>
+            <h1 className="text-h">
+                {t('plantDiagnosis.title')}
+            </h1>
 
             <div className="central-content">
                 <div className="image-container">
                     {selectedImage ? (
                         <img
                             src={selectedImage}
-                            alt="Preview for analysis"
+                            alt={t('plantDiagnosis.title')}
                             className="image-preview"
                         />
                     ) : (
                         <div className="image-placeholder">
-                            <span className="text-span">Take a photo of a plant leaf</span>
+                            <span className="text-span">
+                                {t('plantDiagnosis.placeholder')}
+                            </span>
                         </div>
                     )}
                 </div>
@@ -86,15 +213,17 @@ const PlantDiagnosis: React.FC = () => {
                             onChange={handleImageChange}
                             ref={fileInputRef}
                         />
-                        Choose File
+                        {t('plantDiagnosis.chooseFile')}
                     </label>
 
                     <button
                         onClick={analyzeImage}
-                        disabled={!selectedImage || isProcessing}
+                        disabled={!originalFile.current || isProcessing || isSaving}
                         className="analyze-btn"
                     >
-                        {isProcessing ? "Analyzing..." : "Analyze Plant"}
+                        {isProcessing
+                            ? t('plantDiagnosis.analyzing')
+                            : t('plantDiagnosis.analyzePlant')}
                     </button>
                 </div>
             </div>
@@ -102,33 +231,37 @@ const PlantDiagnosis: React.FC = () => {
             {isProcessing && (
                 <div className="diagnosis-result loading-placeholder">
                     <div className="loading-content">
-                        <p>Analyzing plant...</p>
-                        <p>This may take a few seconds</p>
+                        <p>{t('plantDiagnosis.analyzingText')}</p>
+                        <p>{t('plantDiagnosis.analyzingHint')}</p>
                     </div>
                 </div>
             )}
 
             {!isProcessing && diagnosis && diagnosis.success && diagnosis.data && (
                 <div className="diagnosis-result">
-                    <h2>Diagnosis Result</h2>
+                    <h2>{t('plantDiagnosis.resultTitle')}</h2>
 
                     {classification ? (
                         isConfident ? (
                             <>
-                                <h3>Plant Identified:</h3>
+                                <h3>{t('plantDiagnosis.plantIdentified')}</h3>
                                 <p>{classification.name}</p>
                                 {classification.plant_details?.common_names?.length ? (
                                     <p>
-                                        Common names: {classification.plant_details.common_names.join(", ")}
+                                        {t('plantDiagnosis.commonNames')}{' '}
+                                        {classification.plant_details.common_names.join(", ")}
                                     </p>
                                 ) : null}
-                                <p>Confidence: {Math.round(prob * 100)}%</p>
+                                <p>
+                                    {t('plantDiagnosis.confidence')}{' '}
+                                    {Math.round(prob * 100)}%
+                                </p>
                             </>
                         ) : (
                             <>
-                                <h3>Not a Recognizable Plant</h3>
+                                <h3>{t('plantDiagnosis.notRecognizedTitle')}</h3>
                                 <p>
-                                    The uploaded image does not appear to contain a known plant species.
+                                    {t('plantDiagnosis.notRecognizedText')}
                                 </p>
                             </>
                         )
@@ -140,23 +273,23 @@ const PlantDiagnosis: React.FC = () => {
                                 healthAssessment.isHealthy ? 'healthy' : 'unhealthy'
                             }`}
                         >
-                            <h3>Health Status:</h3>
+                            <h3>{t('plantDiagnosis.healthStatusTitle')}</h3>
                             <p>
                                 {healthAssessment.isHealthy
-                                    ? "Plant appears healthy"
-                                    : "Issues detected"}
+                                    ? t('plantDiagnosis.healthyText')
+                                    : t('plantDiagnosis.issuesText')}
                             </p>
                             {!healthAssessment.isHealthy &&
                             healthAssessment.diseases?.length ? (
                                 <div>
-                                    <h4>Detected Issues:</h4>
+                                    <h4>{t('plantDiagnosis.detectedIssuesTitle')}</h4>
                                     <ul>
                                         {healthAssessment.diseases.map((disease, idx) => (
                                             <li key={idx}>
                                                 <span>{disease.name}</span> (
                                                 {Math.round(disease.probability * 100)}%) -{" "}
                                                 {disease.description ||
-                                                    "No description available."}
+                                                    t('plantDiagnosis.noDescription')}
                                             </li>
                                         ))}
                                     </ul>
@@ -166,14 +299,24 @@ const PlantDiagnosis: React.FC = () => {
                     )}
 
                     <div className="save-button-container">
-                        <button className="save-result-btn">Save Result</button>
+                        <button
+                            className="save-result-btn"
+                            onClick={saveDiagnosis}
+                            disabled={isProcessing || isSaving}
+                        >
+                            {isSaving
+                                ? t('plantDiagnosis.saveButtonSaving')
+                                : t('plantDiagnosis.saveButton')}
+                        </button>
                     </div>
                 </div>
             )}
 
             {!isProcessing && errorMessage && (
                 <div className="error-message">
-                    <p>Error: {errorMessage}</p>
+                    <p>
+                        {t('plantDiagnosis.errorPrefix')} {errorMessage}
+                    </p>
                 </div>
             )}
         </div>

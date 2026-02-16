@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import './LoginPage.css';
+import { useI18n } from '../../I18nContext';
 
 interface LoginRequest {
     email: string;
@@ -20,6 +21,8 @@ interface LoginResponse {
     token?: string;
     apiKey?: string;
     message?: string;
+
+    ndvi_api_key?: string;
 }
 
 interface ErrorResponse {
@@ -40,6 +43,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const { refresh } = useAuth();
+    const { t } = useI18n();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,7 +67,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             let data: LoginResponse | ErrorResponse = await response.json();
 
             if (!response.ok) {
-                let errorMessage = 'Ошибка авторизации';
+                let errorMessage = t('login.error.default', 'Ошибка авторизации');
 
                 if (typeof data === 'object' && data !== null) {
                     if ('message' in data && typeof data.message === 'string') {
@@ -117,6 +121,9 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             if (loginDataResponse.apiKey) {
                 storage.setItem('apiKey', loginDataResponse.apiKey);
             }
+            if (loginDataResponse.ndvi_api_key) {
+                storage.setItem('ndvi_api_key', loginDataResponse.ndvi_api_key);
+            }
 
             // Обновляем контекст аутентификации
             refresh();
@@ -131,7 +138,11 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
 
         } catch (err) {
             console.error('Login error:', err);
-            setError(err instanceof Error ? err.message : 'Произошла ошибка при входе');
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : t('login.error.generic', 'Произошла ошибка при входе'),
+            );
         } finally {
             setLoading(false);
         }
@@ -140,7 +151,9 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     return (
         <div className="login-container">
             <div className="login-form-container">
-                <h1 className="login-title">Вход в систему</h1>
+                <h1 className="login-title">
+                    {t('login.title', 'Вход в систему')}
+                </h1>
 
                 {error && (
                     <div className="error-message">
@@ -154,7 +167,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                             id="email"
                             type="email"
                             className="input-field"
-                            placeholder="Введите ваш email"
+                            placeholder={t('login.email.placeholder', 'Введите ваш email')}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             disabled={loading}
@@ -167,7 +180,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                             id="password"
                             type="password"
                             className="input-field"
-                            placeholder="Введите ваш пароль"
+                            placeholder={t('login.password.placeholder', 'Введите ваш пароль')}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={loading}
@@ -184,7 +197,9 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                                 onChange={(e) => setRememberMe(e.target.checked)}
                                 disabled={loading}
                             />
-                            <span className="checkbox-text">Запомнить меня</span>
+                            <span className="checkbox-text">
+                                {t('login.rememberMe', 'Запомнить меня')}
+                            </span>
                         </label>
                     </div>
 
@@ -193,13 +208,24 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                         className={`login-btn ${loading ? 'loading' : ''}`}
                         disabled={loading}
                     >
-                        {loading ? 'Вход...' : 'Войти'}
+                        {loading
+                            ? t('login.button.loading', 'Вход...')
+                            : t('login.button.submit', 'Войти')}
                     </button>
                 </form>
 
                 <div className="login-footer">
-                    <p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
-                    <p><a href="/forgot-password">Забыли пароль?</a></p>
+                    <p>
+                        {t('login.noAccount', 'Нет аккаунта?')}{' '}
+                        <a href="/register">
+                            {t('login.registerLink', 'Зарегистрироваться')}
+                        </a>
+                    </p>
+                    <p>
+                        <a href="/forgot-password">
+                            {t('login.forgotPassword', 'Забыли пароль?')}
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>

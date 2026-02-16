@@ -1,0 +1,388 @@
+/* src/Pages/NDVIPage.css */
+
+.ndvi-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 20px 40px 20px; /* отступ сверху под фиксированный хедер (уменьшен) */
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.map-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #000;
+}
+
+.api-key-warning {
+    color: #d32f2f;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.ndvi-content {
+    display: flex;
+    gap: 20px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 768px) {
+    .ndvi-content {
+        flex-wrap: nowrap;
+    }
+
+    .map-container {
+        flex: 2;
+        min-width: 300px;
+    }
+
+    .polygons-sidebar {
+        flex: 1;
+        min-width: 250px;
+    }
+}
+
+/* Карта */
+.map-container {
+    width: 100%;
+    height: 500px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+/* Сайдбар полей */
+.polygons-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.polygons-sidebar h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #000;
+}
+
+.polygons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.field-card {
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.field-card:hover {
+    background-color: #fafafa;
+    border-color: #bdbdbd;
+}
+
+.field-card.selected {
+    border-color: #5DD62C;
+    background-color: #b8ff9e;
+}
+
+.field-name {
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin-bottom: 4px;
+    color: #212121;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.field-area,
+.field-date {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.loading,
+.no-polygons {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+}
+
+.field-delete-btn {
+    margin-left: 8px;
+    padding: 4px 8px;
+    font-size: 12px;
+    background-color: #f44336;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.field-delete-btn:hover {
+    background-color: #d32f2f;
+}
+
+/* Блок с ID выбранных полей */
+.selected-field-ids {
+    padding: 16px;
+    background: #ffffff;
+    border-radius: 12px;
+    margin-top: 20px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.selected-field-ids h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #000;
+}
+
+.ids-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.field-id-tag {
+    background: #b8ff9e;
+    color: #000000;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.date-input {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #000;
+    background-color: #fff;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: #5DD62C;
+    box-shadow: 0 0 0 2px rgba(93, 214, 44, 0.2);
+}
+
+.cloud-filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #555;
+}
+
+.cloud-filter-toggle input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.ndvi-primary-button {
+    padding: 10px 16px;
+    background-color: #5DD62C;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.ndvi-primary-button:hover {
+    background-color: #4bc71d;
+}
+
+.ndvi-result {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.ndvi-result h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+}
+
+.ndvi-result p {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.ndvi-mean-value {
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+/* Точки на карте */
+.selected-points-section {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.points-input-container {
+    margin: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.points-input-container input {
+    width: 100%;
+    max-width: 400px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.points-input-container input:focus {
+    outline: none;
+    border-color: #5DD62C;
+    box-shadow: 0 0 0 2px rgba(93, 214, 44, 0.2);
+}
+
+.create-polygon-btn {
+    width: 100%;
+    max-width: 400px; /* ширина, как у текстового поля */
+}
+
+.points-warning {
+    font-size: 12px;
+    color: #d32f2f;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.points-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.point-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.remove-point-btn {
+    background: none;
+    border: none;
+    color: #d32f2f;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.remove-point-btn:hover {
+    background-color: #ffebee;
+}
+/* Добавьте в конец файла NDVIPage.css */
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 12px 0;
+    border: 1px solid #c3e6cb;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 12px 0;
+    border: 1px solid #f5c6cb;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+}
+
+.ndvi-secondary-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #6c757d;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Убедитесь, что кнопка сохранения видна */
+.ndvi-secondary-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.ndvi-secondary-button:hover:not(:disabled) {
+    background-color: #218838;
+}

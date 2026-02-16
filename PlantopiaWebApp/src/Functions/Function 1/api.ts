@@ -2,9 +2,17 @@
 import type { DiagnosisRequest, PlantIdResult, ParseApiResponse } from './PlantDiagnosisInterfaces.ts';
 
 
-const PLANT_ID_API_KEY = "vRXsdu8HqL8P1D2dCEI7lMHmW820bSpTdURcP3uhqu8xnv0LvT";
-const API_BASE_URL = "https://api.plant.id/v3";
 
+const API_BASE_URL = "https://api.plant.id/v3";
+const getApiKey = (): string => {
+    const key = sessionStorage.getItem('apiKey');
+    if (!key) {
+        throw new Error(
+            "API ключ не найден в sessionStorage. Пожалуйста, установите его в профиле."
+        );
+    }
+    return key;
+};
 export const diagnosePlant = async (request: DiagnosisRequest): Promise<PlantIdResult> => {
     try {
 
@@ -25,7 +33,7 @@ export const diagnosePlant = async (request: DiagnosisRequest): Promise<PlantIdR
         const response = await fetch(`${API_BASE_URL}/identification`, {
             method: 'POST',
             headers: {
-                'Api-Key': PLANT_ID_API_KEY,
+                'Api-Key': getApiKey(),
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(cleanRequestBody),

@@ -1,7 +1,8 @@
 // src/Components/Header.tsx
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
+import { useI18n } from '../I18nContext';
 
 interface HeaderProps {
     onLogout: () => void;
@@ -9,23 +10,27 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onLogout }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const location = useLocation();
+    const { t, language } = useI18n();
+
 
     const firstName = sessionStorage.getItem('userFirstName') || localStorage.getItem('userFirstName');
     const lastName = sessionStorage.getItem('userLastName') || localStorage.getItem('userLastName');
     const fullName = firstName && lastName ? `${firstName} ${lastName}` :
-        firstName || lastName || 'Пользователь';
+        firstName || lastName || '';
 
-    useEffect(() => {
-        setIsMenuOpen(false);
-    }, [location.pathname]);
+
+
+
 
     return (
         <>
             <header className="header">
                 {/* Левая часть — приветствие */}
                 <div className="header-greeting">
-                    Привет, {fullName}!
+                    {t('header.greeting', language === 'ru' ? 'Привет' : 'Hello')}
+                    {fullName
+                        ? `, ${fullName}!`
+                        : `, ${t('header.defaultUser', language === 'ru' ? 'Пользователь' : 'User')}!`}
                 </div>
 
                 {/* Мобильное меню */}
@@ -41,10 +46,21 @@ const Header: React.FC<HeaderProps> = ({ onLogout }) => {
                 <nav className={`nav-menu ${isMenuOpen ? 'open' : ''}`}>
                     <ul className="nav-list">
                         <li>
-                            <Link to="/" className="nav-link">Главная</Link>
+                            <Link to="/" className="nav-link">
+                                {t('header.home', language === 'ru' ? 'Главная' : 'Home')}
+                            </Link>
                         </li>
-                        <li><Link to="/profile" className="nav-link">Профиль</Link></li>
-                        <li><Link to="/saved" className="nav-link">Сохранения</Link></li>
+                        <li>
+                            <Link to="/profile" className="nav-link">
+                                {t('header.profile', language === 'ru' ? 'Профиль' : 'Profile')}
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/saved" className="nav-link">
+                                {t('header.saved', language === 'ru' ? 'Сохранения' : 'Saved')}
+                            </Link>
+                        </li>
+
                         <li>
                             <Link
                                 to="/"
@@ -54,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({ onLogout }) => {
                                     onLogout(); // This now calls the logout function passed from AppContent
                                 }}
                             >
-                                Выйти
+                                {t('header.logout', language === 'ru' ? 'Выйти' : 'Logout')}
                             </Link>
                         </li>
                     </ul>

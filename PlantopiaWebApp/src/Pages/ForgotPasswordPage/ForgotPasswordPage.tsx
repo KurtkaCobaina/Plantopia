@@ -1,11 +1,15 @@
 // src/Pages/Auth/ForgotPasswordPage.tsx
 import './ForgotPasswordPage.css';
+import { useI18n } from '../../I18nContext';
 
 const ForgotPasswordPage = () => {
+    const { t } = useI18n();
     return (
         <div className="forgot-password-container">
             <div className="forgot-password-form-container">
-                <h1 className="forgot-password-title">Сброс пароля</h1>
+                <h1 className="forgot-password-title">
+                    {t('forgotPassword.title', 'Сброс пароля')}
+                </h1>
 
                 <form className="forgot-password-form">
                     <div className="input-group">
@@ -14,7 +18,7 @@ const ForgotPasswordPage = () => {
                             id="email"
                             type="email"
                             className="input-field"
-                            placeholder="Введите ваш email"
+                            placeholder={t('forgotPassword.email.placeholder', 'Введите ваш email')}
                         />
                     </div>
 
@@ -24,7 +28,7 @@ const ForgotPasswordPage = () => {
                             id="phone"
                             type="tel"
                             className="input-field"
-                            placeholder="Введите ваш номер телефона"
+                            placeholder={t('forgotPassword.phone.placeholder', 'Введите ваш номер телефона')}
                         />
                     </div>
 
@@ -34,7 +38,7 @@ const ForgotPasswordPage = () => {
                             id="new_password"
                             type="password"
                             className="input-field"
-                            placeholder="Придумайте новый пароль"
+                            placeholder={t('forgotPassword.newPassword.placeholder', 'Придумайте новый пароль')}
                         />
                     </div>
 
@@ -44,7 +48,7 @@ const ForgotPasswordPage = () => {
                             id="confirm_new_password"
                             type="password"
                             className="input-field"
-                            placeholder="Повторите новый пароль"
+                            placeholder={t('forgotPassword.confirmPassword.placeholder', 'Повторите новый пароль')}
                         />
                     </div>
 
@@ -52,12 +56,16 @@ const ForgotPasswordPage = () => {
                         type="submit"
                         className="reset-password-btn"
                     >
-                        Сбросить пароль
+                        {t('forgotPassword.button.submit', 'Сбросить пароль')}
                     </button>
                 </form>
 
                 <div className="forgot-password-footer">
-                    <p><a href="/login">Вернуться к входу</a></p>
+                    <p>
+                        <a href="/login">
+                            {t('forgotPassword.backToLogin', 'Вернуться к входу')}
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>

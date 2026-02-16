@@ -1,41 +1,80 @@
+// NdviMapsPage.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './NdviMapsPage.css';
-
 import { type NdviMap } from '../../Interfaces/NdviMap.ts';
 
 function NdviMapsPage() {
     const [maps, setMaps] = useState<NdviMap[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
-    // Заглушка: имитация загрузки данных
     useEffect(() => {
-        const mockData: NdviMap[] = [
-            {
-                id: 1,
-                user_id: 1,
-                date_taken: "2024-05-10",
-                map_url: "",
-                min_ndvi_value: 0.123,
-                max_ndvi_value: 0.876,
-                avg_ndvi_value: 0.542,
-                cloud_filter_applied: true,
-                created_at: "2024-05-11T09:30:00Z"
-            },
-            {
-                id: 2,
-                user_id: 1,
-                date_taken: "2024-04-22",
-                map_url: "",
-                min_ndvi_value: 0.050,
-                max_ndvi_value: 0.720,
-                avg_ndvi_value: 0.380,
-                cloud_filter_applied: false,
-                created_at: "2024-04-23T14:15:00Z"
+        const loadNdviMaps = async () => {
+            const userIdStr = sessionStorage.getItem('userId');
+            if (!userIdStr) {
+                setError('Пользователь не авторизован');
+                setLoading(false);
+                return;
             }
-        ];
-        setMaps(mockData);
+
+            const userId = parseInt(userIdStr, 10);
+            if (isNaN(userId)) {
+                setError('Некорректный ID пользователя');
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/saveddata/savedndvi?userId=${userId}`);
+                if (!response.ok) {
+                    throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+                }
+                const data: NdviMap[] = await response.json();
+                setMaps(data);
+            } catch (err) {
+                console.error('Ошибка загрузки NDVI-карт:', err);
+                setError('Не удалось загрузить данные');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadNdviMaps();
     }, []);
+
+    const deleteNdviMap = async (id: number) => {
+        if (!window.confirm('Вы уверены, что хотите удалить эту NDVI-карту?')) {
+            return;
+        }
+
+        const userIdStr = sessionStorage.getItem('userId');
+        if (!userIdStr) {
+            alert('Ошибка: пользователь не авторизован');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/saveddata/ndvi/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-Id': userIdStr,
+                },
+            });
+
+            if (response.ok) {
+                // Успешно удалено — обновляем список
+                setMaps(maps.filter(map => map.id !== id));
+            } else {
+                const errorMessage = await response.text();
+                alert(`Ошибка удаления: ${errorMessage || 'Неизвестная ошибка'}`);
+            }
+        } catch (err) {
+            console.error('Ошибка при удалении:', err);
+            alert('Не удалось удалить карту. Проверьте соединение.');
+        }
+    };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('ru-RU', {
@@ -59,6 +98,19 @@ function NdviMapsPage() {
         navigate('/saved');
     };
 
+    if (loading) {
+        return <div className="ndvi-maps-container"><p>Загрузка...</p></div>;
+    }
+
+    if (error) {
+        return (
+            <div className="ndvi-maps-container">
+                <p className="error-message">Ошибка: {error}</p>
+                <button onClick={handleBack}>Назад</button>
+            </div>
+        );
+    }
+
     return (
         <div className="ndvi-maps-container">
             <div className="header-actions">
@@ -66,65 +118,79 @@ function NdviMapsPage() {
                 <button className="back-btn" onClick={handleBack}>Назад</button>
             </div>
 
-            <div className="table-wrapper">
-                <table className="ndvi-table">
-                    <thead>
-                    <tr>
-                        <th>Дата съёмки</th>
-                        <th>Карта</th>
-                        <th>Средний NDVI</th>
-                        <th>Мин / Макс</th>
-                        <th>Фильтр облаков</th>
-                        <th>Создано</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {maps.map((map) => (
-                        <tr key={map.id}>
-                            <td>{formatDate(map.date_taken)}</td>
-                            <td className="map-preview-cell">
-                                {map.map_url ? (
-                                    <a
-                                        href={map.map_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="map-link"
-                                    >
-                                        <img
-                                            src={map.map_url}
-                                            alt={`NDVI карта от ${map.date_taken}`}
-                                            className="map-preview"
-                                        />
-                                    </a>
-                                ) : (
-                                    <span className="no-map">Карта недоступна</span>
-                                )}
-                            </td>
-                            <td>
-                                {map.avg_ndvi_value !== null
-                                    ? map.avg_ndvi_value.toFixed(3)
-                                    : '—'}
-                            </td>
-                            <td>
-                                {map.min_ndvi_value !== null && map.max_ndvi_value !== null
-                                    ? `${map.min_ndvi_value.toFixed(3)} / ${map.max_ndvi_value.toFixed(3)}`
-                                    : '—'}
-                            </td>
-                            <td>
-                                    <span
-                                        className={`filter-badge ${
-                                            map.cloud_filter_applied ? 'applied' : 'not-applied'
-                                        }`}
-                                    >
-                                        {map.cloud_filter_applied ? 'Применён' : 'Не применён'}
-                                    </span>
-                            </td>
-                            <td>{formatDateTime(map.created_at)}</td>
+            {maps.length === 0 ? (
+                <p className="no-data">У вас пока нет сохранённых NDVI-карт.</p>
+            ) : (
+                <div className="table-wrapper">
+                    <table className="ndvi-table">
+                        <thead>
+                        <tr>
+                            <th>Дата съёмки</th>
+                            <th>Карта</th>
+                            <th>Средний NDVI</th>
+                            <th>Мин / Макс</th>
+                            <th>Фильтр облаков</th>
+                            <th>Создано</th>
+                            <th>Действия</th> {/* ← новая колонка */}
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                        {maps.map((map) => (
+                            <tr key={map.id}>
+                                <td>{formatDate(map.dateTaken)}</td>
+                                <td className="map-preview-cell">
+                                    {map.mapUrl ? (
+                                        <a
+                                            href={map.mapUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="map-link"
+                                        >
+                                            <img
+                                                src={map.mapUrl}
+                                                alt={`NDVI карта от ${map.dateTaken}`}
+                                                className="map-preview"
+                                            />
+                                        </a>
+                                    ) : (
+                                        <span className="no-map">Карта недоступна</span>
+                                    )}
+                                </td>
+                                <td>
+                                    {map.avgNdviValue != null
+                                        ? map.avgNdviValue.toFixed(3)
+                                        : '—'}
+                                </td>
+                                <td>
+                                    {map.minNdviValue != null && map.maxNdviValue != null
+                                        ? `${map.minNdviValue.toFixed(3)} / ${map.maxNdviValue.toFixed(3)}`
+                                        : '—'}
+                                </td>
+                                <td>
+                                        <span
+                                            className={`filter-badge ${
+                                                map.cloudFilterApplied ? 'applied' : 'not-applied'
+                                            }`}
+                                        >
+                                            {map.cloudFilterApplied ? 'Применён' : 'Не применён'}
+                                        </span>
+                                </td>
+                                <td>{formatDateTime(map.createdAt)}</td>
+                                <td>
+                                    <button
+                                        className="delete-btn"
+                                        onClick={() => deleteNdviMap(map.id)}
+                                        aria-label="Удалить NDVI-карту"
+                                    >
+                                        Удалить
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 }

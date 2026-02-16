@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 import { AuthProvider, useAuth } from './AuthContext';
 import Header from './Components/Header.tsx';
+import { I18nProvider } from './I18nContext';
 import MainPage from './Pages/MainPage/MainPage.tsx';
 import PlantDiagnosis from './Functions/Function 1/PlantDiagnosis';
 import ProfilePage from './Pages/ProfilePage/ProfilePage';
@@ -13,6 +14,10 @@ import NdviMapsPage from './Pages/NdviMapsPage/NdviMapsPage.tsx';
 import LoginPage from './Pages/LoginPage/LoginPage.tsx';
 import RegisterPage from './Pages/RegisterPage/RegisterPage.tsx';
 import ForgotPasswordPage from './Pages/ForgotPasswordPage/ForgotPasswordPage.tsx';
+import TasksListPage from './Functions/Function 7/TasksListPage';
+import CreateTaskPage from './Functions/Function 7/CreateTaskPage';
+import NDVIPage from "./Functions/Function 6/NDVIPage";
+import FertilizerCalculatorPage from "./Functions/Function 2/FertilizerCalculatorPage";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { isAuthenticated } = useAuth();
@@ -39,13 +44,13 @@ function AppContent() {
 
     const handleLogout = () => {
         const keys = [
-            'authToken', 'sessionId', 'userId', 'userEmail', 'userFirstName', 'userLastName', 'userRole' ,'userPhone', 'userSubscriptionStatus', 'apiKey', 'bis_data'
+            'authToken', 'sessionId', 'userId', 'userEmail', 'userFirstName', 'userLastName', 'userRole' ,'userPhone', 'userSubscriptionStatus', 'apiKey', 'bis_data' , 'ndvi_api_key', 'language'
         ];
         keys.forEach(key => {
             localStorage.removeItem(key);
             sessionStorage.removeItem(key);
         });
-        refresh(); // обновляем контекст
+        refresh();
         window.location.href = '/login';
     };
 
@@ -89,12 +94,31 @@ function AppContent() {
                     </ProtectedRoute>
                 } />
 
+                <Route path="/calculator" element={
+                    <ProtectedRoute>
+                        <FertilizerCalculatorPage />
+                    </ProtectedRoute>
+                } />
                 <Route path="/plant-diagnosis" element={
                     <ProtectedRoute>
                         <PlantDiagnosis />
                     </ProtectedRoute>
                 } />
-
+                <Route path="/calendar" element={
+                    <ProtectedRoute>
+                        <TasksListPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/calendar/create" element={
+                    <ProtectedRoute>
+                        <CreateTaskPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/ndvi-maps" element={
+                    <ProtectedRoute>
+                        <NDVIPage />
+                    </ProtectedRoute>
+                } />
                 <Route path="/profile/edit" element={
                     <ProtectedRoute>
                         <EditProfilePage />
@@ -130,7 +154,9 @@ function AppContent() {
 function App() {
     return (
         <AuthProvider>
-            <AppContent />
+            <I18nProvider>
+                <AppContent />
+            </I18nProvider>
         </AuthProvider>
     );
 }

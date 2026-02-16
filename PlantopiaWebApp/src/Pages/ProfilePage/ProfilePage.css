@@ -107,9 +107,10 @@
 .edit-btn:hover {
     background-color: #4bc71d;
 }
-/* Добавьте эти стили в ваш ProfilePage.css */
 
-.api-key-section {
+/* Стили для секций с ключами - ОДИНАКОВЫЕ ДЛЯ ВСЕХ */
+.api-key-section,
+.ndvi-api-key-section {
     margin-top: 24px;
     padding: 20px;
     border: 1px solid #e0e0e0;
@@ -117,26 +118,31 @@
     background-color: #ffffff;
 }
 
-.api-key-section h2 {
+.api-key-section h2,
+.ndvi-api-key-section h2 {
     margin: 0 0 16px 0;
     color: #000;
     font-size: 18px;
     font-weight: 600;
 }
 
+/* Единый контейнер для всех ключей */
 .api-key-container {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
+/* Единые стили для полей ввода */
 .api-input {
+    width: 100%;
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
     color: #000;
     background-color: #fff;
+    box-sizing: border-box;
 }
 
 .api-input:focus {
@@ -145,7 +151,9 @@
     box-shadow: 0 0 0 2px rgba(93, 214, 44, 0.2);
 }
 
+/* Единые стили для отображения ключа */
 .api-display {
+    width: 100%;
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 6px;
@@ -153,22 +161,27 @@
     font-family: monospace;
     letter-spacing: 1px;
     background-color: #fafafa;
+    box-sizing: border-box;
+    word-break: break-all;
 }
 
+/* Единые стили для кнопок */
 .api-buttons {
     display: flex;
     gap: 12px;
     margin-top: 8px;
 }
 
-.edit-api-btn, .save-api-btn {
+.edit-api-btn,
+.save-api-btn,
+.cancel-api-btn {
     flex: 1;
     padding: 10px 16px;
     border-radius: 6px;
     cursor: pointer;
     font-size: 16px;
     font-weight: 500;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
 .edit-api-btn {
@@ -189,4 +202,147 @@
 
 .save-api-btn:hover {
     background-color: #4bc71d;
+}
+
+.cancel-api-btn {
+    background-color: #fff;
+    color: #666;
+    border: 1px solid #ddd;
+}
+
+.cancel-api-btn:hover {
+    background-color: #f5f5f5;
+    border-color: #999;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 480px) {
+    .profile-container {
+        padding: 16px;
+    }
+
+    .field-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .field-label {
+        flex: none;
+        width: 100%;
+        padding-right: 0;
+    }
+
+    .field-value {
+        width: 100%;
+    }
+
+    .subscription-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .subscription-row .field-label {
+        flex: none;
+        width: 100%;
+        padding-right: 0;
+    }
+
+    .subscription-status {
+        width: auto;
+        min-width: 100px;
+    }
+
+    .api-buttons {
+        flex-direction: column;
+    }
+
+    .edit-api-btn,
+    .save-api-btn,
+    .cancel-api-btn {
+        width: 100%;
+    }
+}
+
+/* Стили для состояния загрузки */
+.profile-container:empty::before {
+    content: "Загрузка профиля...";
+    display: block;
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-size: 16px;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-card,
+.api-key-section,
+.ndvi-api-key-section,
+.edit-btn {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Стили для плейсхолдера */
+.api-input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+/* Дополнительный отступ между секциями */
+.ndvi-api-key-section {
+    margin-top: 24px;
+}
+
+/* Кнопка активации — ярко-зелёная #00ff6f */
+.subscription-activate-btn {
+    display: block;
+    width: 100%;
+    background-color: #5DD62C;
+    color: #000;
+    border: none;
+    padding: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 16px;
+    transition: background-color 0.2s;
+    margin-top: 16px;
+}
+
+.subscription-activate-btn:hover {
+    background-color: #4bc71d;
+}
+
+/* Кнопка отмены — серая */
+.subscription-deactivate-btn {
+    display: block;
+    width: 100%;
+    background-color: #f0f0f0;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 16px;
+    transition: all 0.2s;
+    margin-top: 16px;
+}
+
+.subscription-deactivate-btn:hover {
+    background-color: #e0e0e0;
+    color: #333;
+    border-color: #ccc;
 }

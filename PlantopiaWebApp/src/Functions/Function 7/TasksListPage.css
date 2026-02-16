@@ -1,0 +1,209 @@
+.tasks-list-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 100px); /* Вычитаем высоту хедера */
+    padding: 20px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+}
+
+.tasks-content {
+    width: 100%;
+    max-width: 1000px; /* Расширяем для таблицы */
+    padding: 30px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    color: black;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.back-btn {
+    background-color: #5DD62C;
+    color: black;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 80px;
+}
+
+.back-btn:hover {
+    background-color: #4bc71d;
+}
+
+.add-btn {
+    background-color: #5DD62C;
+    color: black;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 120px;
+}
+
+.add-btn:hover {
+    background-color: #4bc71d;
+}
+
+.tasks-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.tasks-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    font-size: 14px;
+}
+
+.tasks-table th,
+.tasks-table td {
+    padding: 12px 10px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.tasks-table th {
+    background-color: #ffffff;
+    font-weight: 600;
+    color: #333;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.status-completed {
+    background-color: #ffffff;
+    color: #27ae60;
+}
+
+.status-pending {
+    background-color: #fadbd8;
+    color: #c0392b;
+}
+
+/* --- Кнопки действий --- */
+.task-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+}
+
+.action-btn {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 80px; /* ← фиксированная минимальная ширина */
+    max-width: 80px; /* ← чтобы не растягивались под длинный текст */
+    text-align: center;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.complete-btn {
+    background-color: #5DD62C;
+    color: black;
+}
+
+.complete-btn:hover {
+    background-color: #4bc71d;
+}
+
+.revert-btn {
+    background-color: #aaa;
+    color: black;
+}
+
+.revert-btn:hover {
+    background-color: #999;
+}
+
+.delete-btn {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #e60000;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .tasks-list-container {
+        padding: 20px 10px;
+    }
+
+    .tasks-content {
+        padding: 20px;
+    }
+
+    .tasks-table {
+        font-size: 13px;
+    }
+
+    .tasks-table th,
+    .tasks-table td {
+        padding: 10px 6px;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .back-btn, .add-btn {
+        align-self: center;
+        width: fit-content;
+    }
+
+    .section-title {
+        text-align: center;
+    }
+
+    /* Адаптив для кнопок действий */
+    .task-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .action-btn {
+        width: 100%;
+        max-width: 80px;
+        font-size: 11px;
+    }
+}
