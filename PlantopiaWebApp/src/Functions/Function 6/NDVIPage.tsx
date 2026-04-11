@@ -1,7 +1,7 @@
 // src/Pages/NDVIPage.tsx
 import { useState, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import "maplibre-gl/dist/maplibre-gl.css";
 import './NDVIPage.css';
 import { useI18n } from '../../I18nContext';
 
@@ -39,12 +39,13 @@ const NDVIPage = () => {
     const [selectedPoints, setSelectedPoints] = useState<{ lat: number; lng: number }[]>([]);
     const [pointPolygonName, setPointPolygonName] = useState('');
     const [ndviStartDate, setNdviStartDate] = useState<string>('');
-    const [ndviEndDate, setNdviEndDate] = useState<string>('');
+    const [ndviEndDate] = useState<string>('');
     const [ndviData, setNdviData] = useState<NdviData | null>(null);
     const [cloudFilterEnabled, setCloudFilterEnabled] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [isFetchingNdvi, setIsFetchingNdvi] = useState(false); // Новое состояние для загрузки NDVI
 
     const CLOUD_THRESHOLD = 30;
     const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -52,10 +53,8 @@ const NDVIPage = () => {
     const markersRef = useRef<maplibregl.Marker[]>([]);
     const { t, language } = useI18n();
 
-    // Получить API ключ
     const getApiKey = () => sessionStorage.getItem('ndvi_api_key') || '';
 
-    // Упорядочить точки по часовой стрелке
     const orderPointsClockwise = (points: { lat: number; lng: number }[]): { lat: number; lng: number }[] => {
         if (points.length <= 3) return [...points];
         const cx = points.reduce((sum, p) => sum + p.lng, 0) / points.length;
@@ -67,7 +66,6 @@ const NDVIPage = () => {
         });
     };
 
-    // Проверка API ключа
     const checkApiKey = async () => {
         const apiKey = getApiKey();
         if (!apiKey) {
@@ -94,7 +92,6 @@ const NDVIPage = () => {
         }
     };
 
-    // Загрузка существующих полей
     const loadUserPolygons = async () => {
         const apiKey = getApiKey();
         if (!apiKey) {
@@ -136,22 +133,21 @@ const NDVIPage = () => {
         }
     };
 
-    // Создание полигона из точек на карте
     const createPolygonFromPoints = async () => {
         if (selectedPoints.length < 3) {
-            alert(t('ndvi.createPolygon.tooFewPoints', 'Для полигона нужно минимум 3 точки'));
+            console.warn('Для полигона нужно минимум 3 точки');
             return;
         }
 
         const name = pointPolygonName.trim();
         if (!name) {
-            alert(t('ndvi.createPolygon.noName', 'Укажите название поля'));
+            console.warn('Укажите название поля');
             return;
         }
 
         const apiKey = getApiKey();
         if (!apiKey) {
-            alert(t('ndvi.apiKey.notSet', 'API ключ не задан. Укажите его в профиле.'));
+            console.warn('API ключ не задан. Укажите его в профиле.');
             return;
         }
 
@@ -182,7 +178,7 @@ const NDVIPage = () => {
             });
 
             if (!response.ok) {
-                let errorMessage = t('ndvi.createPolygon.errorDefault', 'Не удалось создать полигон.');
+                let errorMessage = 'Не удалось создать полигон.';
                 try {
                     const errorJson = await response.json();
                     if (errorJson.message) errorMessage = errorJson.message;
@@ -209,24 +205,18 @@ const NDVIPage = () => {
             markersRef.current.forEach(m => m.remove());
             markersRef.current = [];
 
-            alert(t('ndvi.createPolygon.success', '✅ Полигон успешно создан!'));
+            console.log('Полигон успешно создан');
         } catch (err) {
             console.error('Ошибка при создании полигона:', err);
-            alert(
-                `❌ ${t('ndvi.common.error', 'Ошибка')}:\n${
-                    err instanceof Error ? err.message : t('common.unknownError', 'Неизвестная ошибка')
-                }`
-            );
         }
     };
 
-    // Удаление полигона
     const deletePolygon = async (id: string) => {
         if (!window.confirm(t('ndvi.deletePolygon.confirm', 'Вы уверены, что хотите удалить это поле?'))) return;
 
         const apiKey = getApiKey();
         if (!apiKey) {
-            alert(t('ndvi.apiKey.notSetShort', 'API ключ не задан.'));
+            console.warn('API ключ не задан.');
             return;
         }
 
@@ -245,27 +235,21 @@ const NDVIPage = () => {
                 setSelectedFieldId(null);
             }
 
-            alert('✅ Полигон успешно удалён.');
+            console.log('Полигон успешно удалён');
         } catch (err) {
             console.error('Ошибка при удалении полигона:', err);
-            alert(
-                `❌ ${t('ndvi.deletePolygon.errorPrefix', 'Не удалось удалить полигон:')}\n${
-                    err instanceof Error ? err.message : t('common.unknownError', 'неизвестная ошибка')
-                }`
-            );
         }
     };
 
-    // Получение истории NDVI
     const fetchNDVI = async () => {
         if (!selectedFieldId) {
-            alert(t('ndvi.fetch.noField', 'Сначала выберите поле'));
+            console.warn('Сначала выберите поле');
             return;
         }
 
         const apiKey = getApiKey();
         if (!apiKey) {
-            alert(t('ndvi.apiKey.notSetShort', 'API ключ не задан'));
+            console.warn('API ключ не задан');
             return;
         }
 
@@ -292,13 +276,16 @@ const NDVIPage = () => {
             if (endSec > nowSec) endSec = nowSec;
 
             if (startSec >= endSec) {
-                alert(t('ndvi.fetch.invalidDateRange', 'Дата начала должна быть раньше даты окончания'));
+                console.warn('Дата начала должна быть раньше даты окончания');
                 return;
             }
         } catch (e) {
-            alert(t('ndvi.fetch.invalidDateFormat', 'Неверный формат даты'));
+            console.warn('Неверный формат даты');
             return;
         }
+
+        setIsFetchingNdvi(true); // Включаем спиннер
+        setNdviData(null); // Скрываем старые данные
 
         try {
             let url = `https://api.agromonitoring.com/agro/1.0/ndvi/history?start=${startSec}&end=${endSec}&polyid=${selectedFieldId}&appid=${apiKey}`;
@@ -317,7 +304,7 @@ const NDVIPage = () => {
 
             if (!Array.isArray(data) || data.length === 0) {
                 setNdviData(null);
-                alert(t('ndvi.fetch.noDataInPeriod', 'Нет данных NDVI за выбранный период'));
+                console.log('Нет данных NDVI за выбранный период');
                 return;
             }
 
@@ -329,7 +316,7 @@ const NDVIPage = () => {
 
             if (validRecords.length === 0) {
                 setNdviData(null);
-                alert(t('ndvi.fetch.noValidValues', 'Нет корректных NDVI-значений'));
+                console.log('Нет корректных NDVI-значений');
                 return;
             }
 
@@ -346,39 +333,32 @@ const NDVIPage = () => {
                 cl: latest.cl ?? 100,
             });
 
-            // Очищаем предыдущие сообщения о сохранении
             setSaveSuccess(null);
             setSaveError(null);
 
         } catch (err) {
             console.error('Ошибка получения NDVI:', err);
             setNdviData(null);
-            alert(
-                `❌ ${t('ndvi.fetch.errorPrefix', 'Ошибка NDVI')}:\n${
-                    err instanceof Error ? err.message : t('common.unknownError', 'неизвестная ошибка')
-                }`
-            );
+        } finally {
+            setIsFetchingNdvi(false); // Выключаем спиннер
         }
     };
 
-    // Сохранение NDVI в базу (упрощенная версия без JWT)
     const saveNdviToDb = async () => {
         if (!ndviData) {
-            alert(t('ndvi.save.noData', 'Нет данных для сохранения'));
+            console.warn('Нет данных для сохранения');
             return;
         }
 
-        // Получаем ID пользователя из sessionStorage
         const userId = sessionStorage.getItem('userId');
         if (!userId) {
-            alert(t('ndvi.save.unauthorized', 'ID пользователя не найден. Войдите в систему.'));
+            console.warn('ID пользователя не найден. Войдите в систему.');
             return;
         }
 
-        // Парсим ID пользователя
         const parsedUserId = parseInt(userId, 10);
         if (isNaN(parsedUserId) || parsedUserId <= 0) {
-            alert('Некорректный ID пользователя');
+            console.warn('Некорректный ID пользователя');
             return;
         }
 
@@ -387,7 +367,6 @@ const NDVIPage = () => {
         setSaveSuccess(null);
 
         try {
-            // Простой POST запрос без авторизации
             const response = await fetch('/api/ndvimap/save', {
                 method: 'POST',
                 headers: {
@@ -408,7 +387,6 @@ const NDVIPage = () => {
 
             if (response.ok) {
                 setSaveSuccess(result.message || '✅ NDVI-данные сохранены в профиль');
-                // Очищаем сообщение через 3 секунды
                 setTimeout(() => setSaveSuccess(null), 3000);
             } else {
                 setSaveError(result.error || 'Ошибка при сохранении');
@@ -421,7 +399,6 @@ const NDVIPage = () => {
         }
     };
 
-    // Инициализация при монтировании
     useEffect(() => {
         const init = async () => {
             const valid = await checkApiKey();
@@ -430,7 +407,6 @@ const NDVIPage = () => {
         init();
     }, []);
 
-    // Инициализация карты
     useEffect(() => {
         if (!mapContainerRef.current) return;
 
@@ -485,14 +461,12 @@ const NDVIPage = () => {
         };
     }, [polygons]);
 
-    // Удаление одной точки
     const handleRemovePoint = (index: number) => {
         markersRef.current[index]?.remove();
         setSelectedPoints(prev => prev.filter((_, i) => i !== index));
         markersRef.current = markersRef.current.filter((_, i) => i !== index);
     };
 
-    // Выбор одного поля
     const toggleFieldSelection = (id: string) => {
         setSelectedFieldId(prev => prev === id ? null : id);
     };
@@ -503,7 +477,7 @@ const NDVIPage = () => {
         <div className="ndvi-page">
             <div className="map-header">
                 <h2>{t('ndvi.header.myFields', 'Мои поля')}</h2>
-                {apiKeyValid === false && (
+                {getApiKey == null && (
                     <div className="api-key-warning">
                         ⚠️ {t('ndvi.header.invalidApiKey', 'Недействительный API ключ')}
                     </div>
@@ -562,7 +536,6 @@ const NDVIPage = () => {
                 </div>
             </div>
 
-            {/* Выбранное поле + NDVI */}
             {selectedFieldId && (
                 <div className="selected-field-ids">
                     <h3>{t('ndvi.selectedField.title', 'Выбранное поле:')}</h3>
@@ -575,15 +548,9 @@ const NDVIPage = () => {
                             onChange={(e) => setNdviStartDate(e.target.value)}
                             max={today}
                         />
-                        <input
-                            type="date"
-                            className="date-input"
-                            value={ndviEndDate}
-                            onChange={(e) => setNdviEndDate(e.target.value)}
-                            max={today}
-                        />
-                        <button onClick={fetchNDVI} className="ndvi-primary-button">
-                            {t('ndvi.selectedField.fetchButton', 'Получить NDVI')}
+
+                        <button onClick={fetchNDVI} className="ndvi-primary-button" disabled={isFetchingNdvi}>
+                            {isFetchingNdvi ? t('common.loading', 'Загрузка...') : t('ndvi.selectedField.fetchButton', 'Получить NDVI')}
                         </button>
 
                         <label className="cloud-filter-toggle">
@@ -591,13 +558,20 @@ const NDVIPage = () => {
                                 type="checkbox"
                                 checked={cloudFilterEnabled}
                                 onChange={(e) => setCloudFilterEnabled(e.target.checked)}
+                                disabled={isFetchingNdvi}
                             />
                             {t('ndvi.selectedField.cloudLabel', 'Облачность')} ≤ {CLOUD_THRESHOLD}%
                         </label>
                     </div>
 
-                    {/* Отображение NDVI */}
-                    {ndviData && (
+                    {isFetchingNdvi && (
+                        <div className="ndvi-loading-spinner">
+                            <div className="spinner"></div>
+                            <p>{t('ndvi.result.fetching', 'Получение данных NDVI...')}</p>
+                        </div>
+                    )}
+
+                    {!isFetchingNdvi && ndviData && (
                         <div className="ndvi-result">
                             <h4>📊 {t('ndvi.result.title', 'Статистика NDVI')}</h4>
                             <p><strong>{t('ndvi.result.date', 'Дата:')}</strong> {ndviData.date.toLocaleDateString(language)}</p>
@@ -609,11 +583,9 @@ const NDVIPage = () => {
                             <p><strong>{t('ndvi.result.median', 'Медиана:')}</strong> {ndviData.median.toFixed(4)}</p>
                             <p><strong>{t('ndvi.result.range', 'Диапазон:')}</strong> {ndviData.min.toFixed(4)} — {ndviData.max.toFixed(4)}</p>
 
-                            {/* Индикация сохранения */}
                             {saveSuccess && <div className="success-message">{saveSuccess}</div>}
                             {saveError && <div className="error-message">{saveError}</div>}
 
-                            {/* Кнопка сохранения */}
                             <button
                                 onClick={saveNdviToDb}
                                 className="ndvi-secondary-button"
@@ -624,10 +596,15 @@ const NDVIPage = () => {
                             </button>
                         </div>
                     )}
+
+                    {!isFetchingNdvi && !ndviData && selectedFieldId && (
+                        <div className="no-data-message">
+                            {t('ndvi.result.noData', 'Нажмите "Получить NDVI", чтобы загрузить данные.')}
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* Точки на карте + создание полигона */}
             {selectedPoints.length > 0 && (
                 <div className="selected-points-section">
                     <h3>{t('ndvi.points.title', 'Точки на карте')} ({selectedPoints.length})</h3>

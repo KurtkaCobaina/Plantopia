@@ -18,6 +18,7 @@ import TasksListPage from './Functions/Function 7/TasksListPage';
 import CreateTaskPage from './Functions/Function 7/CreateTaskPage';
 import NDVIPage from "./Functions/Function 6/NDVIPage";
 import FertilizerCalculatorPage from "./Functions/Function 2/FertilizerCalculatorPage";
+import WeatherMapPage from "./Functions/Function 3/WeatherMapPage.tsx";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { isAuthenticated } = useAuth();
@@ -107,6 +108,11 @@ function AppContent() {
                 <Route path="/calendar" element={
                     <ProtectedRoute>
                         <TasksListPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/agro-weather" element={
+                    <ProtectedRoute>
+                        <WeatherMapPage />
                     </ProtectedRoute>
                 } />
                 <Route path="/calendar/create" element={

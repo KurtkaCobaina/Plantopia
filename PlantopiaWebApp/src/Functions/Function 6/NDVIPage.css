@@ -372,8 +372,8 @@
 
 /* Убедитесь, что кнопка сохранения видна */
 .ndvi-secondary-button {
-    background-color: #28a745;
-    color: white;
+    background-color: #5DD62C;
+    color: black;
     border: none;
     padding: 10px 20px;
     border-radius: 4px;
@@ -384,5 +384,47 @@
 }
 
 .ndvi-secondary-button:hover:not(:disabled) {
-    background-color: #218838;
+    background-color: #4bc71d;
+}
+/* NDVIPage.css */
+
+.ndvi-loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #666;
+    text-align: center;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.no-data-message {
+    padding: 20px;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+/* Блокировка кнопки во время загрузки */
+.ndvi-primary-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
