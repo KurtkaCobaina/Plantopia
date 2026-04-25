@@ -1,244 +1,193 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './TasksListPage.css';
+import CalendarView from './CalendarView'; // Убедитесь, что путь верный
 import { type Task } from '../../Interfaces/Task.ts';
 
 const TasksListPage = () => {
+    const navigate = useNavigate();
+
+    // Состояния
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const navigate = useNavigate();
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+    // Загрузка данных
     useEffect(() => {
         const fetchTasks = async () => {
             try {
                 const userIdStr = sessionStorage.getItem('userId');
-                if (!userIdStr) {
-                    setError('Пользователь не авторизован (userId отсутствует в сессии)');
-                    setLoading(false);
-                    return;
-                }
+                if (!userIdStr) throw new Error('Не авторизован');
 
                 const userId = parseInt(userIdStr, 10);
-                if (isNaN(userId) || userId <= 0) {
-                    setError('Некорректный ID пользователя');
-                    setLoading(false);
-                    return;
-                }
-
                 const response = await fetch(`http://localhost:5243/api/Tasks/${userId}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });
 
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        setTasks([]);
-                    } else {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                } else {
-                    const data: Task[] = await response.json();
-                    setTasks(data);
-                }
+                if (!response.ok) throw new Error('Ошибка сети');
+                const data: Task[] = await response.json();
+                setTasks(data);
+
+                // По умолчанию выбираем сегодня (локальная дата)
+                const today = new Date();
+                const y = today.getFullYear();
+                const m = String(today.getMonth() + 1).padStart(2, '0');
+                const d = String(today.getDate()).padStart(2, '0');
+                setSelectedDate(`${y}-${m}-${d}`);
+
             } catch (err) {
-                console.error('Ошибка загрузки задач:', err);
-                setError(err instanceof Error ? err.message : 'Ошибка загрузки задач');
+                setError(err instanceof Error ? err.message : 'Ошибка загрузки');
             } finally {
                 setLoading(false);
             }
         };
-
         fetchTasks();
-    }, [navigate]);
+    }, []);
 
-    const formatDate = (value: string | null | undefined): string => {
-        if (!value) return '—';
+    // Фильтрация задач по выбранной дате (ИСПРАВЛЕНИЕ ЧАСОВЫХ ПОЯСОВ)
+    const filteredTasks = useMemo(() => {
+        if (!selectedDate) return [];
 
-        const cleanStr = value
-            .replace(/\s+\d+:\d+:\d+\.?\d*[+\-\d:]*/, '')
-            .replace(/T.*$/, '');
+        return tasks.filter(task => {
+            if (!task.dueDate) return false;
 
-        if (/^\d{4}-\d{2}-\d{2}$/.test(cleanStr)) {
-            const [y, m, d] = cleanStr.split('-').map(Number);
-            return `${d.toString().padStart(2, '0')}.${m.toString().padStart(2, '0')}.${y}`;
-        }
+            // Создаем объект даты из строки БД
+            const taskDateObj = new Date(task.dueDate);
 
-        const date = new Date(value);
-        if (isNaN(date.getTime())) {
-            console.warn('Не удалось распарсить дату:', value);
-            return '—';
-        }
+            // Извлекаем компоненты даты в ЛОКАЛЬНОМ времени браузера
+            // Это компенсирует сдвиг UTC+3 (или другого пояса)
+            const year = taskDateObj.getFullYear();
+            const month = String(taskDateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(taskDateObj.getDate()).padStart(2, '0');
 
-        return date.toLocaleDateString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    };
+            const localTaskDateStr = `${year}-${month}-${day}`;
 
-    const formatDateTime = (value: string | null | undefined): string => {
-        if (!value) return '—';
-        const date = new Date(value);
-        if (isNaN(date.getTime())) return '—';
-        return date.toLocaleString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
+            // Сравниваем с выбранной датой (которая тоже в формате YYYY-MM-DD локального времени)
+            return localTaskDateStr === selectedDate;
+        }).sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime());
+    }, [tasks, selectedDate]);
 
-    const getStatusClass = (completed: boolean) => {
-        return completed ? 'status-completed' : 'status-pending';
-    };
-
-    const getStatusText = (completed: boolean) => {
-        return completed ? 'Выполнено' : 'В процессе';
-    };
-
+    // Действия
     const handleAddTask = () => {
-        navigate('/calendar/create');
+        navigate('/calendar/create', { state: { initialDate: selectedDate } });
     };
 
-    const handleToggleComplete = async (taskId: number, currentStatus: boolean) => {
+    const handleDelete = async (id: number) => {
+        if (!window.confirm('Удалить задачу?')) return;
         try {
-            const response = await fetch(`http://localhost:5243/api/Tasks/${taskId}/toggle-complete`, {
+            await fetch(`http://localhost:5243/api/Tasks/${id}`, { method: 'DELETE' });
+            setTasks(prev => prev.filter(t => t.id !== id));
+        } catch (e) {
+            alert('Ошибка удаления');
+        }
+    };
+
+    const handleToggle = async (id: number, status: boolean) => {
+        try {
+            await fetch(`http://localhost:5243/api/Tasks/${id}/toggle-complete`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
             });
-
-            if (!response.ok) {
-                throw new Error(`Ошибка: ${response.status}`);
-            }
-
-            // Обновляем статус в состоянии
-            setTasks(prev => prev.map(task =>
-                task.id === taskId ? { ...task, completed: !currentStatus } : task
-            ));
-
-            alert(`Задача ${!currentStatus ? 'отмечена как выполнена' : 'возвращена в работу'}`);
-        } catch (err) {
-            console.error('Ошибка при обновлении статуса:', err);
-            alert('Не удалось обновить статус задачи');
+            setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !status } : t));
+        } catch (e) {
+            alert('Ошибка обновления');
         }
     };
 
-    const handleDeleteTask = async (taskId: number) => {
-        if (!confirm('Вы уверены, что хотите удалить эту задачу?')) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`http://localhost:5243/api/Tasks/${taskId}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-            });
-
-            if (!response.ok) {
-                throw new Error(`Ошибка: ${response.status}`);
-            }
-
-            // Удаляем задачу из списка
-            setTasks(prev => prev.filter(task => task.id !== taskId));
-
-            alert('Задача успешно удалена');
-        } catch (err) {
-            console.error('Ошибка при удалении задачи:', err);
-            alert('Не удалось удалить задачу');
-        }
+    // Форматирование заголовка даты без сдвига часовых поясов
+    const getFormattedDateHeader = (dateStr: string | null) => {
+        if (!dateStr) return '';
+        const [y, m, d] = dateStr.split('-').map(Number);
+        // Создаем дату с полуднем, чтобы гарантированно попасть в нужный день при любом часовом поясе
+        const dateObj = new Date(y, m - 1, d, 12, 0, 0);
+        return dateObj.toLocaleDateString('ru-RU', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long'
+        });
     };
 
-    if (loading) {
-        return (
-            <div className="tasks-list-container">
-                <div className="tasks-content">
-                    <div className="loading">Загрузка задач...</div>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="tasks-list-container">
-                <div className="tasks-content">
-                    <div className="error">{error}</div>
-                </div>
-            </div>
-        );
-    }
+    if (loading) return <div className="page-loader">Загрузка...</div>;
+    if (error) return <div className="page-error">{error}</div>;
 
     return (
-        <div className="tasks-list-container">
-            <div className="tasks-content">
-                <div className="header-actions">
-                    <button className="back-btn" onClick={() => navigate('/')}>
-                        Назад
-                    </button>
-                    <h2 className="section-title">Мои задачи</h2>
-                    <button className="add-btn" onClick={handleAddTask}>
-                        Добавить задачу
-                    </button>
+        <div className="scheduler-container">
+            {/* Левая панель: Календарь */}
+            <aside className="sidebar-calendar">
+                <div className="sidebar-header">
+                    <button onClick={() => navigate('/')} className="btn-icon">←</button>
+                    <h2>Календарь</h2>
                 </div>
 
-                <div className="tasks-table-wrapper">
-                    <table className="tasks-table">
-                        <thead>
-                        <tr>
-                            <th>Заголовок</th>
-                            <th>Описание</th>
-                            <th>Срок</th>
-                            <th>Категория</th>
-                            <th>Статус</th>
-                            <th>Дата создания</th>
-                            <th>Действия</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {tasks.length > 0 ? (
-                            tasks.map((task) => (
-                                <tr key={task.id}>
-                                    <td>{task.title}</td>
-                                    <td>{task.description || '—'}</td>
-                                    <td>{formatDate(task.dueDate)}</td>
-                                    <td>{task.category || '—'}</td>
-                                    <td>
-                                            <span className={`status-badge ${getStatusClass(task.completed)}`}>
-                                                {getStatusText(task.completed)}
-                                            </span>
-                                    </td>
-                                    <td>{formatDateTime(task.createdAt)}</td>
-                                    <td>
-                                        <div className="task-actions">
-                                            <button
-                                                className={`action-btn ${task.completed ? 'revert-btn' : 'complete-btn'}`}
-                                                onClick={() => handleToggleComplete(task.id, task.completed)}
-                                            >
-                                                {task.completed ? 'Вернуть' : 'Завершить'}
-                                            </button>
-                                            <button
-                                                className="action-btn delete-btn"
-                                                onClick={() => handleDeleteTask(task.id)}
-                                            >
-                                                Удалить
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan={7} style={{ textAlign: 'center', padding: '20px' }}>
-                                    У вас пока нет задач. Начните с добавления новой!
-                                </td>
-                            </tr>
-                        )}
-                        </tbody>
-                    </table>
+                <div className="calendar-wrapper">
+                    <CalendarView tasks={tasks} onDateClick={setSelectedDate} />
                 </div>
-            </div>
+
+                <button className="btn-primary full-width" onClick={handleAddTask}>
+                    + Новая задача
+                </button>
+            </aside>
+
+            {/* Правая панель: Список задач */}
+            <main className="main-content">
+                <header className="content-header">
+                    <div>
+                        {selectedDate ? (
+                            <>
+                                <h1>{getFormattedDateHeader(selectedDate)}</h1>
+                                <span className="subtitle">{filteredTasks.length} задач на этот день</span>
+                            </>
+                        ) : (
+                            <h1>Выберите дату</h1>
+                        )}
+                    </div>
+                </header>
+
+                <div className="tasks-scroll-area">
+                    {filteredTasks.length === 0 ? (
+                        <div className="empty-state">
+                            <p>Нет задач на этот день.</p>
+                            <button className="btn-secondary" onClick={handleAddTask}>Создать первую</button>
+                        </div>
+                    ) : (
+                        <div className="tasks-grid">
+                            {filteredTasks.map(task => (
+                                <div key={task.id} className={`task-card ${task.completed ? 'completed' : ''}`}>
+                                    <div className="task-body">
+                                        <h3>{task.title}</h3>
+                                        <p>{task.description || 'Без описания'}</p>
+                                        <div className="task-meta">
+                                            <span className="badge">{task.category || 'Общее'}</span>
+                                            {/* Отображаем время также через локальные методы */}
+                                            <span className="time">
+                                                {new Date(task.dueDate!).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="task-controls">
+                                        <button
+                                            onClick={() => handleToggle(task.id, task.completed)}
+                                            className={`control-btn ${task.completed ? 'undo' : 'check'}`}
+                                            title={task.completed ? "Вернуть" : "Выполнить"}
+                                        >
+                                            {task.completed ? '↩' : '✓'}
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(task.id)}
+                                            className="control-btn delete"
+                                            title="Удалить"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </main>
         </div>
     );
 };

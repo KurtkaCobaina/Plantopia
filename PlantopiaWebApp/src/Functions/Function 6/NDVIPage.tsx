@@ -1,4 +1,3 @@
-// src/Pages/NDVIPage.tsx
 import { useState, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -31,6 +30,14 @@ interface NdviData {
     cl: number;
 }
 
+// Вспомогательная функция для цвета NDVI
+const getNdviColor = (value: number): string => {
+    if (value < 0.2) return '#e74c3c'; // Красный - нет растительности
+    if (value < 0.4) return '#f39c12'; // Оранжевый - слабая
+    if (value < 0.6) return '#f1c40f'; // Желтый - средняя
+    return '#2ecc71'; // Зеленый - хорошая
+};
+
 const NDVIPage = () => {
     const [polygons, setPolygons] = useState<AgroPolygon[]>([]);
     const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
@@ -45,7 +52,7 @@ const NDVIPage = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
-    const [isFetchingNdvi, setIsFetchingNdvi] = useState(false); // Новое состояние для загрузки NDVI
+    const [isFetchingNdvi, setIsFetchingNdvi] = useState(false);
 
     const CLOUD_THRESHOLD = 30;
     const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -284,8 +291,8 @@ const NDVIPage = () => {
             return;
         }
 
-        setIsFetchingNdvi(true); // Включаем спиннер
-        setNdviData(null); // Скрываем старые данные
+        setIsFetchingNdvi(true);
+        setNdviData(null);
 
         try {
             let url = `https://api.agromonitoring.com/agro/1.0/ndvi/history?start=${startSec}&end=${endSec}&polyid=${selectedFieldId}&appid=${apiKey}`;
@@ -340,7 +347,7 @@ const NDVIPage = () => {
             console.error('Ошибка получения NDVI:', err);
             setNdviData(null);
         } finally {
-            setIsFetchingNdvi(false); // Выключаем спиннер
+            setIsFetchingNdvi(false);
         }
     };
 
@@ -572,27 +579,54 @@ const NDVIPage = () => {
                     )}
 
                     {!isFetchingNdvi && ndviData && (
-                        <div className="ndvi-result">
-                            <h4>📊 {t('ndvi.result.title', 'Статистика NDVI')}</h4>
-                            <p><strong>{t('ndvi.result.date', 'Дата:')}</strong> {ndviData.date.toLocaleDateString(language)}</p>
-                            <p><strong>{t('ndvi.result.satellite', 'Спутник:')}</strong> {ndviData.type === 's2' ? 'Sentinel-2' : ndviData.type === 'l8' ? 'Landsat 8' : ndviData.type}</p>
-                            <p><strong>{t('ndvi.result.dc', 'Покрытие (dc):')}</strong> {ndviData.dc}%</p>
-                            <p><strong>{t('ndvi.result.cl', 'Облачность (cl):')}</strong> {ndviData.cl}%</p>
-                            <p><strong>{t('ndvi.result.cloudFilter', 'Фильтр облаков:')}</strong> {cloudFilterEnabled ? t('ndvi.result.cloudFilterOn', `включён (≤${CLOUD_THRESHOLD}%)`) : t('ndvi.result.cloudFilterOff', 'выключен')}</p>
-                            <p><strong>{t('ndvi.result.mean', 'NDVI (mean):')}</strong> <span className="ndvi-mean-value">{ndviData.mean.toFixed(4)}</span></p>
-                            <p><strong>{t('ndvi.result.median', 'Медиана:')}</strong> {ndviData.median.toFixed(4)}</p>
-                            <p><strong>{t('ndvi.result.range', 'Диапазон:')}</strong> {ndviData.min.toFixed(4)} — {ndviData.max.toFixed(4)}</p>
+                        <div className="ndvi-card-container">
+                            <div className="ndvi-card-header">
+                                <h4>📊 Анализ NDVI</h4>
+                                <span className="ndvi-date-badge">{ndviData.date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                            </div>
+
+                            <div className="ndvi-main-metric">
+                                <div className="metric-circle" style={{ borderColor: getNdviColor(ndviData.mean) }}>
+                                    <span className="metric-value" style={{ color: getNdviColor(ndviData.mean) }}>
+                                        {ndviData.mean.toFixed(2)}
+                                    </span>
+                                    <span className="metric-label">NDVI</span>
+                                </div>
+                                <div className="metric-info">
+                                    <p><strong>Спутник:</strong> {ndviData.type === 's2' ? 'Sentinel-2' : ndviData.type === 'l8' ? 'Landsat 8' : ndviData.type}</p>
+                                    <p><strong>Покрытие поля:</strong> {ndviData.dc}%</p>
+                                    <p><strong>Облачность:</strong>
+                                        <span className={ndviData.cl > CLOUD_THRESHOLD ? 'high-cloud' : ''}>
+                                            {ndviData.cl}% {cloudFilterEnabled && `(фильтр ≤${CLOUD_THRESHOLD}%)`}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="ndvi-stats-grid">
+                                <div className="stat-item">
+                                    <span className="stat-label">Минимум</span>
+                                    <span className="stat-value">{ndviData.min.toFixed(2)}</span>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-label">Медиана</span>
+                                    <span className="stat-value">{ndviData.median.toFixed(2)}</span>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-label">Максимум</span>
+                                    <span className="stat-value">{ndviData.max.toFixed(2)}</span>
+                                </div>
+                            </div>
 
                             {saveSuccess && <div className="success-message">{saveSuccess}</div>}
                             {saveError && <div className="error-message">{saveError}</div>}
 
                             <button
                                 onClick={saveNdviToDb}
-                                className="ndvi-secondary-button"
+                                className="ndvi-save-btn"
                                 disabled={isSaving}
-                                style={{ marginTop: '16px' }}
                             >
-                                {isSaving ? 'Сохранение...' : t('ndvi.save.button', 'Сохранить в профиль')}
+                                {isSaving ? 'Сохранение...' : '💾 Сохранить в профиль'}
                             </button>
                         </div>
                     )}

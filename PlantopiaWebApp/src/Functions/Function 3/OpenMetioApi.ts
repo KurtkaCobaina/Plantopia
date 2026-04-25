@@ -1,6 +1,7 @@
 import { fetchWeatherApi } from "openmeteo";
 
 // Функция получения погоды, принимающая координаты из карты
+// @ts-ignore
 export async function getWeatherData(latitude, longitude) {
     const params = {
         latitude: latitude,

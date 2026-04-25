@@ -1,41 +1,41 @@
-// src/Pages/WeatherMapPage.tsx
 import { useState, useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import "maplibre-gl/dist/maplibre-gl.css";
 import './WeatherMapPage.css';
 import { useI18n } from '../../I18nContext';
 import { getWeatherData } from './OpenMetioApi.ts';
-import WeatherDayDetail from './/WeatherDayDetail';
+import WeatherDayDetail from './WeatherDayDetail';
 
-// Расширяем интерфейс для хранения всех данных
-interface FullHourlyData {
-    time: Date[];
-    temperature_2m: number[];
-    precipitation_probability: number[];
-    precipitation: number[];
-    rain: number[];
-    snowfall: number[];
-    soil_temperature_0cm: number[];
-    soil_temperature_6cm: number[];
-    soil_temperature_18cm: number[];
-    soil_temperature_54cm: number[];
-    relative_humidity_2m: number[];
-    wind_speed_10m: number[];
-    wind_direction_10m: number[];
-    soil_moisture_0_to_1cm: number[];
-    soil_moisture_1_to_3cm: number[];
-    soil_moisture_3_to_9cm: number[];
-    soil_moisture_9_to_27cm: number[];
-    soil_moisture_27_to_81cm: number[];
-    et0_fao_evapotranspiration: number[];
-    vapour_pressure_deficit: number[];
-    evapotranspiration: number[];
+// Interface for a single hour's data
+interface HourlyDataPoint {
+    time: Date;
+    temperature_2m: number;
+    precipitation_probability: number;
+    precipitation: number;
+    rain: number;
+    snowfall: number;
+    soil_temperature_0cm: number;
+    soil_temperature_6cm: number;
+    soil_temperature_18cm: number;
+    soil_temperature_54cm: number;
+    relative_humidity_2m: number;
+    wind_speed_10m: number;
+    wind_direction_10m: number;
+    soil_moisture_0_to_1cm: number;
+    soil_moisture_1_to_3cm: number;
+    soil_moisture_3_to_9cm: number;
+    soil_moisture_9_to_27cm: number;
+    soil_moisture_27_to_81cm: number;
+    et0_fao_evapotranspiration: number;
+    vapour_pressure_deficit: number;
+    evapotranspiration: number;
 }
 
-interface DaySummary {
-    date: Date;
-    index: number; // Индекс в массиве данных (берем полдень или первое значение дня)
+// Interface for a day containing multiple hours
+interface DayGroup {
+    dateKey: string; // YYYY-MM-DD for grouping
     displayDate: string;
+    hours: HourlyDataPoint[];
 }
 
 const WeatherMapPage = () => {
@@ -46,9 +46,16 @@ const WeatherMapPage = () => {
 
     const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [loadingWeather, setLoadingWeather] = useState(false);
-    const [fullData, setFullData] = useState<FullHourlyData | null>(null);
-    const [daysList, setDaysList] = useState<DaySummary[]>([]);
-    const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
+
+    // Store all raw hourly data points
+    const [allHours, setAllHours] = useState<HourlyDataPoint[]>([]);
+
+    // Store grouped days for the sidebar list
+    const [daysList, setDaysList] = useState<DayGroup[]>([]);
+
+    // Selected date key (YYYY-MM-DD) to show details for
+    const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
+
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -92,9 +99,9 @@ const WeatherMapPage = () => {
 
             markerRef.current = marker;
             setSelectedLocation({ lat, lng });
-            setFullData(null);
+            setAllHours([]);
             setDaysList([]);
-            setSelectedDayIndex(null);
+            setSelectedDateKey(null);
             setError(null);
         };
 
@@ -103,70 +110,75 @@ const WeatherMapPage = () => {
         return () => { if (mapRef.current) mapRef.current.remove(); };
     }, []);
 
-    const convertToNumberArray = (input: any): number[] | null => {
-        if (!input) return null;
-        return Array.from(input, (item) => Number(item));
-    };
+
 
     const fetchWeather = async () => {
         if (!selectedLocation) return;
         setLoadingWeather(true);
         setError(null);
-        setFullData(null);
+        setAllHours([]);
         setDaysList([]);
-        setSelectedDayIndex(null);
+        setSelectedDateKey(null);
 
         try {
             const data = await getWeatherData(selectedLocation.lat, selectedLocation.lng);
             if (!data || !data.hourly) throw new Error("Нет данных");
 
             const h = data.hourly;
-            const full: FullHourlyData = {
-                time: h.time || [],
-                temperature_2m: convertToNumberArray(h.temperature_2m) || [],
-                precipitation_probability: convertToNumberArray(h.precipitation_probability) || [],
-                precipitation: convertToNumberArray(h.precipitation) || [],
-                rain: convertToNumberArray(h.rain) || [],
-                snowfall: convertToNumberArray(h.snowfall) || [],
-                soil_temperature_0cm: convertToNumberArray(h.soil_temperature_0cm) || [],
-                soil_temperature_6cm: convertToNumberArray(h.soil_temperature_6cm) || [],
-                soil_temperature_18cm: convertToNumberArray(h.soil_temperature_18cm) || [],
-                soil_temperature_54cm: convertToNumberArray(h.soil_temperature_54cm) || [],
-                relative_humidity_2m: convertToNumberArray(h.relative_humidity_2m) || [],
-                wind_speed_10m: convertToNumberArray(h.wind_speed_10m) || [],
-                wind_direction_10m: convertToNumberArray(h.wind_direction_10m) || [],
-                soil_moisture_0_to_1cm: convertToNumberArray(h.soil_moisture_0_to_1cm) || [],
-                soil_moisture_1_to_3cm: convertToNumberArray(h.soil_moisture_1_to_3cm) || [],
-                soil_moisture_3_to_9cm: convertToNumberArray(h.soil_moisture_3_to_9cm) || [],
-                soil_moisture_9_to_27cm: convertToNumberArray(h.soil_moisture_9_to_27cm) || [],
-                soil_moisture_27_to_81cm: convertToNumberArray(h.soil_moisture_27_to_81cm) || [],
-                et0_fao_evapotranspiration: convertToNumberArray(h.et0_fao_evapotranspiration) || [],
-                vapour_pressure_deficit: convertToNumberArray(h.vapour_pressure_deficit) || [],
-                evapotranspiration: convertToNumberArray(h.evapotranspiration) || [],
-            };
+            const times = h.time || [];
 
-            setFullData(full);
+            // Convert raw arrays into an array of objects (one per hour)
 
-            // Генерация списка дней (берем индекс первого измерения каждого дня)
-            const uniqueDays: DaySummary[] = [];
-            const seenDates = new Set<string>();
-
-            full.time.forEach((date, idx) => {
-                const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
-                if (!seenDates.has(dateKey)) {
-                    seenDates.add(dateKey);
-                    uniqueDays.push({
-                        date: date,
-                        index: idx,
-                        displayDate: date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
-                    });
-                }
+            // @ts-ignore
+            const parsedHours: HourlyDataPoint[] = times.map((timeStr: string, idx: number) => {
+                return {
+                    time: new Date(timeStr),
+                    temperature_2m: h.temperature_2m?.[idx] ?? 0,
+                    precipitation_probability: h.precipitation_probability?.[idx] ?? 0,
+                    precipitation: h.precipitation?.[idx] ?? 0,
+                    rain: h.rain?.[idx] ?? 0,
+                    snowfall: h.snowfall?.[idx] ?? 0,
+                    soil_temperature_0cm: h.soil_temperature_0cm?.[idx] ?? 0,
+                    soil_temperature_6cm: h.soil_temperature_6cm?.[idx] ?? 0,
+                    soil_temperature_18cm: h.soil_temperature_18cm?.[idx] ?? 0,
+                    soil_temperature_54cm: h.soil_temperature_54cm?.[idx] ?? 0,
+                    relative_humidity_2m: h.relative_humidity_2m?.[idx] ?? 0,
+                    wind_speed_10m: h.wind_speed_10m?.[idx] ?? 0,
+                    wind_direction_10m: h.wind_direction_10m?.[idx] ?? 0,
+                    soil_moisture_0_to_1cm: h.soil_moisture_0_to_1cm?.[idx] ?? 0,
+                    soil_moisture_1_to_3cm: h.soil_moisture_1_to_3cm?.[idx] ?? 0,
+                    soil_moisture_3_to_9cm: h.soil_moisture_3_to_9cm?.[idx] ?? 0,
+                    soil_moisture_9_to_27cm: h.soil_moisture_9_to_27cm?.[idx] ?? 0,
+                    soil_moisture_27_to_81cm: h.soil_moisture_27_to_81cm?.[idx] ?? 0,
+                    et0_fao_evapotranspiration: h.et0_fao_evapotranspiration?.[idx] ?? 0,
+                    vapour_pressure_deficit: h.vapour_pressure_deficit?.[idx] ?? 0,
+                    evapotranspiration: h.evapotranspiration?.[idx] ?? 0,
+                };
             });
 
+            setAllHours(parsedHours);
+
+            // Group hours by day
+            const daysMap = new Map<string, DayGroup>();
+
+            parsedHours.forEach(hour => {
+                const dateKey = hour.time.toISOString().split('T')[0]; // YYYY-MM-DD
+                if (!daysMap.has(dateKey)) {
+                    daysMap.set(dateKey, {
+                        dateKey,
+                        displayDate: hour.time.toLocaleDateString(undefined, { day: 'numeric', month: 'short', weekday: 'short' }),
+                        hours: []
+                    });
+                }
+                daysMap.get(dateKey)?.hours.push(hour);
+            });
+
+            const uniqueDays = Array.from(daysMap.values());
             setDaysList(uniqueDays);
-            // Автоматически выбираем первый день
+
+            // Automatically select the first day
             if (uniqueDays.length > 0) {
-                setSelectedDayIndex(uniqueDays[0].index);
+                setSelectedDateKey(uniqueDays[0].dateKey);
             }
 
         } catch (err) {
@@ -177,38 +189,10 @@ const WeatherMapPage = () => {
         }
     };
 
-    // Получение данных для выбранного дня
-    const getCurrentDayData = () => {
-        if (!fullData || selectedDayIndex === null) return null;
-        const i = selectedDayIndex;
-        return {
-            date: fullData.time[i],
-            data: {
-                temp: fullData.temperature_2m[i],
-                precipProb: fullData.precipitation_probability[i],
-                precip: fullData.precipitation[i],
-                rain: fullData.rain[i],
-                snow: fullData.snowfall[i],
-                soilTemp0: fullData.soil_temperature_0cm[i],
-                soilTemp6: fullData.soil_temperature_6cm[i],
-                soilTemp18: fullData.soil_temperature_18cm[i],
-                soilTemp54: fullData.soil_temperature_54cm[i],
-                humidity: fullData.relative_humidity_2m[i],
-                windSpeed: fullData.wind_speed_10m[i],
-                windDir: fullData.wind_direction_10m[i],
-                soilMoisture0: fullData.soil_moisture_0_to_1cm[i],
-                soilMoisture1: fullData.soil_moisture_1_to_3cm[i],
-                soilMoisture3: fullData.soil_moisture_3_to_9cm[i],
-                soilMoisture9: fullData.soil_moisture_9_to_27cm[i],
-                soilMoisture27: fullData.soil_moisture_27_to_81cm[i],
-                et0: fullData.et0_fao_evapotranspiration[i],
-                vpd: fullData.vapour_pressure_deficit[i],
-                evapotranspiration: fullData.evapotranspiration[i],
-            }
-        };
-    };
-
-    const currentDayDetails = getCurrentDayData();
+    // Get the list of hours for the currently selected day
+    const currentDayHours = selectedDateKey
+        ? daysList.find(d => d.dateKey === selectedDateKey)?.hours || []
+        : [];
 
     return (
         <div className="weather-map-page">
@@ -218,7 +202,7 @@ const WeatherMapPage = () => {
             </div>
 
             <div className="weather-content">
-                {/* Левая часть: Карта и Список дней */}
+                {/* Left Column: Map and Day List */}
                 <div className="map-column">
                     <div className="map-wrapper">
                         <div ref={mapContainerRef} className="weather-map-container" />
@@ -232,16 +216,16 @@ const WeatherMapPage = () => {
                         )}
                     </div>
 
-                    {/* Список дней появляется после загрузки */}
+                    {/* List of Days */}
                     {daysList.length > 0 && (
                         <div className="days-list-container">
                             <h3>{t('weather.availableDays', 'Доступные дни')}</h3>
                             <div className="days-list">
                                 {daysList.map((day) => (
                                     <button
-                                        key={day.index}
-                                        className={`day-item ${selectedDayIndex === day.index ? 'active' : ''}`}
-                                        onClick={() => setSelectedDayIndex(day.index)}
+                                        key={day.dateKey}
+                                        className={`day-item ${selectedDateKey === day.dateKey ? 'active' : ''}`}
+                                        onClick={() => setSelectedDateKey(day.dateKey)}
                                     >
                                         {day.displayDate}
                                     </button>
@@ -251,7 +235,7 @@ const WeatherMapPage = () => {
                     )}
                 </div>
 
-                {/* Правая часть: Детали выбранного дня */}
+                {/* Right Column: Hourly Details for Selected Day */}
                 <div className="details-column">
                     {error && <div className="error-msg">{error}</div>}
 
@@ -259,15 +243,12 @@ const WeatherMapPage = () => {
                         <div className="loading-state">{t('common.loading', 'Обработка данных...')}</div>
                     )}
 
-                    {!loadingWeather && currentDayDetails && (
-                        <WeatherDayDetail
-                            date={currentDayDetails.date}
-                            data={currentDayDetails.data}
-                        />
+                    {!loadingWeather && currentDayHours.length > 0 && (
+                        <WeatherDayDetail hours={currentDayHours} />
                     )}
 
-                    {!loadingWeather && fullData && !currentDayDetails && (
-                        <div className="no-data-message">Выберите день из списка слева</div>
+                    {!loadingWeather && allHours.length > 0 && currentDayHours.length === 0 && (
+                        <div className="no-data-message">{t('weather.selectDay', 'Выберите день из списка слева')}</div>
                     )}
                 </div>
             </div>
