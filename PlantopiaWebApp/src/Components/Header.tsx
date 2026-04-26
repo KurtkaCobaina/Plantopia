@@ -1,6 +1,5 @@
-// src/Components/Header.tsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Header.css';
 import { useI18n } from '../I18nContext';
 
@@ -11,16 +10,28 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onLogout }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { t, language } = useI18n();
+    const navigate = useNavigate();
 
-
+    // Получаем данные пользователя
     const firstName = sessionStorage.getItem('userFirstName') || localStorage.getItem('userFirstName');
     const lastName = sessionStorage.getItem('userLastName') || localStorage.getItem('userLastName');
-    const fullName = firstName && lastName ? `${firstName} ${lastName}` :
-        firstName || lastName || '';
+    const fullName = firstName && lastName ? `${firstName} ${lastName}` : (firstName || lastName || '');
 
+    // Получаем роль пользователя
+    const userRole = sessionStorage.getItem('userRole') || localStorage.getItem('userRole');
+    const isExpert = userRole === 'expert';
 
+    // Закрываем мобильное меню при переходе по ссылке
+    const handleLinkClick = () => {
+        setIsMenuOpen(false);
+    };
 
-
+    // Обработчик выхода с перенаправлением на логин
+    const handleLogoutClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        onLogout();
+        navigate('/login');
+    };
 
     return (
         <>
@@ -45,30 +56,52 @@ const Header: React.FC<HeaderProps> = ({ onLogout }) => {
                 {/* Навигация */}
                 <nav className={`nav-menu ${isMenuOpen ? 'open' : ''}`}>
                     <ul className="nav-list">
+
+                        {/* --- КНОПКА ДЛЯ ЭКСПЕРТА: МОЙ КАБИНЕТ --- */}
+                        {isExpert && (
+                            <li>
+                                <Link
+                                    to="/expert-dashboard"
+                                    className="nav-link "
+                                    onClick={handleLinkClick}
+                                >
+                                    {t('header.expertDashboard', language === 'ru' ? 'Мой кабинет' : 'My Dashboard')}
+                                </Link>
+                            </li>
+                        )}
+                        {/* --------------------------------------- */}
+
+                        {/* Ссылка "Главная" видна ТОЛЬКО фермерам */}
+                        {!isExpert && (
+                            <li>
+                                <Link to="/" className="nav-link" onClick={handleLinkClick}>
+                                    {t('header.home', language === 'ru' ? 'Главная' : 'Home')}
+                                </Link>
+                            </li>
+                        )}
+
+                        {/* Ссылка "Профиль" видна всем */}
                         <li>
-                            <Link to="/" className="nav-link">
-                                {t('header.home', language === 'ru' ? 'Главная' : 'Home')}
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/profile" className="nav-link">
+                            <Link to="/profile" className="nav-link" onClick={handleLinkClick}>
                                 {t('header.profile', language === 'ru' ? 'Профиль' : 'Profile')}
                             </Link>
                         </li>
-                        <li>
-                            <Link to="/saved" className="nav-link">
-                                {t('header.saved', language === 'ru' ? 'Сохранения' : 'Saved')}
-                            </Link>
-                        </li>
 
+                        {/* Ссылка "Сохранения" видна ТОЛЬКО фермерам */}
+                        {!isExpert && (
+                            <li>
+                                <Link to="/saved" className="nav-link" onClick={handleLinkClick}>
+                                    {t('header.saved', language === 'ru' ? 'Сохранения' : 'Saved')}
+                                </Link>
+                            </li>
+                        )}
+
+                        {/* Кнопка Выйти видна всем */}
                         <li>
                             <Link
-                                to="/"
+                                to="/login"
                                 className="nav-link logout-btn"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    onLogout(); // This now calls the logout function passed from AppContent
-                                }}
+                                onClick={handleLogoutClick}
                             >
                                 {t('header.logout', language === 'ru' ? 'Выйти' : 'Logout')}
                             </Link>

@@ -23,12 +23,8 @@ function MainPage() {
                 <button onClick={() => handleButtonClick('/agro-weather')} className="btn">
                     {t('main.buttons.agroWeather', 'Агро-погодные окна')}
                 </button>
-                <button onClick={() => handleButtonClick('/chat')} className="btn">
-                    {t('main.buttons.chat', 'Чат-агроном')}
-                </button>
-                <button onClick={() => handleButtonClick('/soil-analise')} className="btn">
-                    {t('main.buttons.soilAnalysis', 'Быстрый анализ почвы')}
-                </button>
+
+
                 <button onClick={() => handleButtonClick('/ndvi-maps')} className="btn">
                     {t('main.buttons.ndviMaps', 'NDVI-карта здоровья посевов')}
                 </button>

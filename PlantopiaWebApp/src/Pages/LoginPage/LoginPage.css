@@ -157,3 +157,49 @@
     margin-bottom: 15px;
     border: 1px solid #f5c6cb;
 }
+/* ... существующие стили ... */
+
+/* Стили для переключателя ролей */
+.role-switcher {
+    display: flex;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 20px;
+    position: relative;
+    top: -10px; /* Немного сдвигаем вверх, чтобы было ближе к краю */
+    left: -10px;
+}
+
+.role-btn {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.role-btn.active {
+    background-color: #ffffff;
+    color: #5DD62C;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+}
+
+.role-btn:hover:not(.active) {
+    background-color: #e0e0e0;
+}
+
+/* Адаптация заголовка в зависимости от роли */
+.login-title {
+    text-align: center;
+    color: black;
+    font-size: 24px;
+    margin-bottom: 24px;
+    margin-top: 10px; /* Компенсация сдвига переключателя */
+}

@@ -1,31 +1,102 @@
-/* src/components/PlantDiagnosis.css */
-
-/* Основной контейнер — центрирует всё содержимое */
-.plant-diagnosis-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 120px 20px 40px 20px; /* 120px = высота хедера */
-    background-color: #ffffff;
+/* Основной контейнер разметки (как в ExpertsListPage) */
+.plant-diagnosis-layout {
+    display: flex;
+    height: calc(100vh - 80px); /* Высота минус хедер */
+    background-color: #f3f4f6;
+    padding: 20px;
+    gap: 20px;
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Заголовок */
-.text-h {
-    color: black;
-    font-size: 2rem;
-    font-weight: 600;
-    text-align: center;
+/* --- Левая панель (Сайдбар) --- */
+.sidebar-diagnosis {
+    width: 320px;
+    flex-shrink: 0;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
-/* Центральный блок — изображение + кнопки */
+.sidebar-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+}
+
+.sidebar-nav {
+    margin-bottom: 20px;
+}
+
+.nav-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-btn:hover {
+    background-color: #f0fdf4;
+    border-color: #5DD62C;
+    color: #5DD62C;
+}
+
+.sidebar-info p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* --- Правая панель (Основной контент) --- */
+.main-diagnosis-content {
+    flex-grow: 1;
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Прокрутка внутри контента */
+}
+
+/* Центральный блок (изображение + кнопки) */
 .central-content {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    margin-top: 24px;
+    margin-top: 20px;
+    margin-bottom: 30px;
 }
 
 .image-container {
@@ -45,42 +116,37 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    object-position: center;
-    display: block;
 }
 
 .image-placeholder {
     text-align: center;
     color: #666;
     font-size: 14px;
-    padding: 16px;
 }
 
 .action-buttons {
     display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: center;
+    gap: 10px;
     width: 100%;
     max-width: 400px;
+    justify-content: center;
 }
 
-.file-input-label {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 200px;
+.file-input-label, .analyze-btn {
+    flex: 1;
     height: 40px;
     background-color: #5DD62C;
     color: black;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 .file-input-label input[type="file"] {
@@ -91,160 +157,106 @@
     height: 100%;
     opacity: 0;
     cursor: pointer;
-    z-index: 2;
 }
 
-.analyze-btn {
-    width: 200px;
-    height: 40px;
-    background-color: #5DD62C;
-    color: black;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    text-align: center;
-    line-height: 40px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.file-input-label:hover, .analyze-btn:hover:not(:disabled) {
+    background-color: #4bc71d;
 }
 
 button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    background-color: #ccc;
 }
 
-/* Индикатор процесса */
-.loading-placeholder {
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-}
-
-.loading-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 20px;
-}
-
-.loading-content p {
-    margin: 4px 0;
-    color: #555;
-    font-weight: 500;
-}
-
-/* Блок результатов — теперь такой же ширины, как верхняя часть */
+/* Результаты */
 .diagnosis-result {
-    margin-top: 24px;
+    margin-top: 20px;
     padding: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
+    background-color: #fff;
     border: 1px solid #eee;
-    color: black;
-    width: 100%;
-    max-width: 400px; /* Совпадает с шириной изображения */
+    border-radius: 12px;
+    max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+    width: 100%;
 }
 
 .diagnosis-result h2 {
     margin-top: 0;
-    margin-bottom: 12px;
     font-size: 1.5rem;
-    color: black;
+    color: #111;
     text-align: center;
+    margin-bottom: 20px;
 }
 
-.diagnosis-result p {
-    margin: 8px 0;
-    font-size: 14px;
-    color: black;
-}
-
-.diagnosis-result h3 {
-    margin: 16px 0 8px 0;
-    font-size: 1.1rem;
-    color: black;
-}
-
-/* Статус здоровья — зелёный или красный фон */
 .health-status {
-    padding: 16px;
+    padding: 15px;
     border-radius: 8px;
-    margin-top: 16px;
-    color: black;
+    margin-top: 15px;
 }
 
 .health-status.healthy {
-    background-color: #d1f7d1;
-    border-left: 4px solid #2ecc71;
+    background-color: #dcfce7;
+    border-left: 4px solid #16a34a;
 }
 
 .health-status.unhealthy {
-    background-color: #fadbd8;
-    border-left: 4px solid #e74c3c;
-}
-
-.health-status p {
-    margin: 8px 0;
-    font-weight: bold;
-    color: black;
-}
-
-.health-status h4 {
-    margin: 12px 0 8px 0;
-    font-size: 0.9rem;
-    color: black;
+    background-color: #fee2e2;
+    border-left: 4px solid #dc2626;
 }
 
 .health-status ul {
     padding-left: 20px;
-    margin: 8px 0;
-    color: black;
+    margin-top: 10px;
 }
 
-.health-status li {
-    margin: 4px 0;
-    font-size: 14px;
-    color: black;
-}
-
-/* Кнопка сохранения результата */
-.save-result-btn {
-    width: 200px;
-    height: 40px;
-    background-color: #5DD62C;
-    color: black;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    text-align: center;
-    line-height: 40px;
-    cursor: pointer;
+.save-button-container {
+    margin-top: 20px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    margin: 20px auto 0 auto;
 }
 
-/* Сообщение об ошибке */
-.error-message {
-    margin-top: 24px;
-    padding: 16px;
-    background-color: #fadbd8;
-    border-left: 4px solid #e74c3c;
-    border-radius: 8px;
+.save-result-btn {
     width: 100%;
-    max-width: 400px;
+    max-width: 300px;
+    padding: 12px;
+    background-color: #111;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.save-result-btn:hover:not(:disabled) {
+    background-color: #333;
+}
+
+.error-message {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fee2e2;
+    color: #dc2626;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 600px;
     margin-left: auto;
     margin-right: auto;
 }
 
-.error-message p {
-    margin: 0;
-    color: #c0392b;
-    font-weight: bold;
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .plant-diagnosis-layout {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+    .sidebar-diagnosis {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    .main-diagnosis-content {
+        height: auto;
+    }
 }

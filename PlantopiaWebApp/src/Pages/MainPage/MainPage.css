@@ -1,12 +1,11 @@
 /* src/Pages/MainPage/MainPage.css */
 
-
 .main-page-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 100px); /* Высота экрана минус высота хедера */
-    padding: 20px 20px 20px 20px; /* Убираем верхний отступ */
+    min-height: calc(100vh - 100px);
+    padding: 20px;
     background-color: #ffffff;
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -14,12 +13,14 @@
 
 .buttons-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 колонки на мобильных */
+    /* По умолчанию (мобильные) можно оставить 2 колонки или сделать 1,
+       но если цель "по 3", то меняем базовое значение или медиа-запросы */
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     justify-content: center;
     max-width: 100%;
     width: 100%;
-    padding: 0 10px; /* Дополнительный отступ для мобильных */
+    padding: 0 10px;
 }
 
 .btn {
@@ -33,9 +34,9 @@
     cursor: pointer;
     text-align: center;
     transition: background-color 0.2s;
-    min-width: 160px;
-    width: 300px; /* Занимает всю ширину ячейки */
-    height: 200px;
+    min-width: 140px; /* Уменьшил минимальную ширину, чтобы 3 кнопки влезали */
+    width: 100%; /* Кнопка занимает всю ширину ячейки сетки */
+    height: 180px; /* Немного уменьшил высоту для компактности */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -47,22 +48,26 @@
 }
 
 /* Медиа-запросы для адаптивности */
+
+/* Планшеты и небольшие десктопы: 3 колонки */
 @media screen and (min-width: 768px) {
     .buttons-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 колонки на планшетах */
-        max-width: 600px;
+        grid-template-columns: repeat(3, 1fr); /* <-- ИЗМЕНЕНИЕ: 3 колонки */
+        max-width: 900px;
     }
 }
 
+/* Большие десктопы: тоже 3 колонки, но шире контейнер */
 @media screen and (min-width: 1024px) {
     .buttons-grid {
-        grid-template-columns: repeat(4, 1fr); /* 4 колонки на десктопах */
-        max-width: 900px;
+        grid-template-columns: repeat(3, 1fr); /* <-- ИЗМЕНЕНИЕ: 3 колонки */
+        max-width: 1100px;
+        gap: 20px; /* Можно увеличить отступы на больших экранах */
     }
 }
 
 @media screen and (min-width: 1200px) {
     .buttons-grid {
-        max-width: 1000px;
+        max-width: 1200px;
     }
 }

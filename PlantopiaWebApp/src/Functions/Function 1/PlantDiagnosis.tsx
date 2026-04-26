@@ -1,16 +1,20 @@
 import React, { useState, useRef, type ChangeEvent } from 'react';
+import { useNavigate } from 'react-router-dom'; // Добавляем навигацию
 import { diagnosePlant } from './api.ts';
 import type { PlantIdResult } from './PlantDiagnosisInterfaces.ts';
 import './PlantDiagnosis.css';
 import { useI18n } from '../../I18nContext';
 
 const PlantDiagnosis: React.FC = () => {
+    const navigate = useNavigate();
     const { t } = useI18n();
+
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [diagnosis, setDiagnosis] = useState<PlantIdResult | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const originalFile = useRef<File | null>(null);
 
@@ -63,7 +67,6 @@ const PlantDiagnosis: React.FC = () => {
         }
     };
 
-    // === Загрузка изображения ===
     const uploadImageAndGetUrl = async (file: File): Promise<string> => {
         const formData = new FormData();
         formData.append('image', file);
@@ -81,7 +84,6 @@ const PlantDiagnosis: React.FC = () => {
         return data.url;
     };
 
-    // === Сохранение диагноза ===
     const saveDiagnosis = async () => {
         if (!diagnosis?.success || !diagnosis.data || !originalFile.current) {
             alert(t('plantDiagnosis.noDiagnosisToSave'));
@@ -91,7 +93,6 @@ const PlantDiagnosis: React.FC = () => {
         try {
             setIsSaving(true);
 
-            // 1. Получаем userId из sessionStorage
             const userIdStr = sessionStorage.getItem("userId");
             if (!userIdStr) {
                 alert(t('plantDiagnosis.notLoggedIn'));
@@ -103,10 +104,7 @@ const PlantDiagnosis: React.FC = () => {
                 return;
             }
 
-            // 2. Загружаем изображение
             const imageUrl = await uploadImageAndGetUrl(originalFile.current);
-
-            // 3. Преобразуем данные в формат, ожидаемый бэкендом
             const { classification, healthAssessment } = diagnosis.data;
 
             if (!classification) {
@@ -128,7 +126,6 @@ const PlantDiagnosis: React.FC = () => {
                 },
             };
 
-            // Обработка здоровья
             if (healthAssessment) {
                 backendResult.is_healthy = { binary: healthAssessment.isHealthy };
 
@@ -141,11 +138,9 @@ const PlantDiagnosis: React.FC = () => {
                     };
                 }
             } else {
-                // Если healthAssessment отсутствует — считаем здоровым
                 backendResult.is_healthy = { binary: true };
             }
 
-            // 4. Отправляем данные на сервер
             const saveResponse = await fetch('/api/diagnoses/save-diagnosis', {
                 method: 'POST',
                 headers: {
@@ -176,149 +171,170 @@ const PlantDiagnosis: React.FC = () => {
         }
     };
 
-    // Вспомогательные переменные для отображения
     const classification = diagnosis?.data?.classification;
     const prob = classification?.probability;
     const isConfident = prob != null && prob >= 0.7;
     const healthAssessment = diagnosis?.data?.healthAssessment;
 
     return (
-        <div className="plant-diagnosis-container">
-            <h1 className="text-h">
-                {t('plantDiagnosis.title')}
-            </h1>
+        <div className="plant-diagnosis-layout">
 
-            <div className="central-content">
-                <div className="image-container">
-                    {selectedImage ? (
-                        <img
-                            src={selectedImage}
-                            alt={t('plantDiagnosis.title')}
-                            className="image-preview"
-                        />
-                    ) : (
-                        <div className="image-placeholder">
-                            <span className="text-span">
-                                {t('plantDiagnosis.placeholder')}
-                            </span>
-                        </div>
-                    )}
+            {/* ЛЕВАЯ ПАНЕЛЬ (САЙДБАР) */}
+            <aside className="sidebar-diagnosis">
+                <div className="sidebar-header">
+                    <button onClick={() => navigate('/')} className="btn-icon">←</button>
+                    <h2>{t('plantDiagnosis.sidebarTitle', 'Диагностика')}</h2>
                 </div>
 
-                <div className="action-buttons">
-                    <label className="file-input-label">
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            ref={fileInputRef}
-                        />
-                        {t('plantDiagnosis.chooseFile')}
-                    </label>
-
+                <div className="sidebar-nav">
                     <button
-                        onClick={analyzeImage}
-                        disabled={!originalFile.current || isProcessing || isSaving}
-                        className="analyze-btn"
+                        onClick={() => navigate('/saved')}
+                        className="nav-btn"
                     >
-                        {isProcessing
-                            ? t('plantDiagnosis.analyzing')
-                            : t('plantDiagnosis.analyzePlant')}
+                        📂 {t('plantDiagnosis.savedDiagnoses', 'Сохраненные диагнозы')}
                     </button>
                 </div>
-            </div>
 
-            {isProcessing && (
-                <div className="diagnosis-result loading-placeholder">
-                    <div className="loading-content">
-                        <p>{t('plantDiagnosis.analyzingText')}</p>
-                        <p>{t('plantDiagnosis.analyzingHint')}</p>
-                    </div>
+                <div className="sidebar-info">
+                    <p>{t('plantDiagnosis.hint', 'Загрузите фото растения для анализа болезней и вредителей.')}</p>
                 </div>
-            )}
+            </aside>
 
-            {!isProcessing && diagnosis && diagnosis.success && diagnosis.data && (
-                <div className="diagnosis-result">
-                    <h2>{t('plantDiagnosis.resultTitle')}</h2>
+            {/* ОСНОВНОЙ КОНТЕНТ */}
+            <main className="main-diagnosis-content">
 
-                    {classification ? (
-                        isConfident ? (
-                            <>
-                                <h3>{t('plantDiagnosis.plantIdentified')}</h3>
-                                <p>{classification.name}</p>
-                                {classification.plant_details?.common_names?.length ? (
-                                    <p>
-                                        {t('plantDiagnosis.commonNames')}{' '}
-                                        {classification.plant_details.common_names.join(", ")}
-                                    </p>
-                                ) : null}
-                                <p>
-                                    {t('plantDiagnosis.confidence')}{' '}
-                                    {Math.round(prob * 100)}%
-                                </p>
-                            </>
+                <div className="central-content">
+                    <div className="image-container">
+                        {selectedImage ? (
+                            <img
+                                src={selectedImage}
+                                alt={t('plantDiagnosis.title')}
+                                className="image-preview"
+                            />
                         ) : (
-                            <>
-                                <h3>{t('plantDiagnosis.notRecognizedTitle')}</h3>
-                                <p>
-                                    {t('plantDiagnosis.notRecognizedText')}
-                                </p>
-                            </>
-                        )
-                    ) : null}
+                            <div className="image-placeholder">
+                                <span className="text-span">
+                                    {t('plantDiagnosis.placeholder', 'Выберите изображение')}
+                                </span>
+                            </div>
+                        )}
+                    </div>
 
-                    {isConfident && healthAssessment && (
-                        <div
-                            className={`health-status ${
-                                healthAssessment.isHealthy ? 'healthy' : 'unhealthy'
-                            }`}
-                        >
-                            <h3>{t('plantDiagnosis.healthStatusTitle')}</h3>
-                            <p>
-                                {healthAssessment.isHealthy
-                                    ? t('plantDiagnosis.healthyText')
-                                    : t('plantDiagnosis.issuesText')}
-                            </p>
-                            {!healthAssessment.isHealthy &&
-                            healthAssessment.diseases?.length ? (
-                                <div>
-                                    <h4>{t('plantDiagnosis.detectedIssuesTitle')}</h4>
-                                    <ul>
-                                        {healthAssessment.diseases.map((disease, idx) => (
-                                            <li key={idx}>
-                                                <span>{disease.name}</span> (
-                                                {Math.round(disease.probability * 100)}%) -{" "}
-                                                {disease.description ||
-                                                    t('plantDiagnosis.noDescription')}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            ) : null}
-                        </div>
-                    )}
+                    <div className="action-buttons">
+                        <label className="file-input-label">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                ref={fileInputRef}
+                            />
+                            {t('plantDiagnosis.chooseFile', 'Выбрать файл')}
+                        </label>
 
-                    <div className="save-button-container">
                         <button
-                            className="save-result-btn"
-                            onClick={saveDiagnosis}
-                            disabled={isProcessing || isSaving}
+                            onClick={analyzeImage}
+                            disabled={!originalFile.current || isProcessing || isSaving}
+                            className="analyze-btn"
                         >
-                            {isSaving
-                                ? t('plantDiagnosis.saveButtonSaving')
-                                : t('plantDiagnosis.saveButton')}
+                            {isProcessing
+                                ? t('plantDiagnosis.analyzing', 'Анализ...')
+                                : t('plantDiagnosis.analyzePlant', 'Анализировать')}
                         </button>
                     </div>
                 </div>
-            )}
 
-            {!isProcessing && errorMessage && (
-                <div className="error-message">
-                    <p>
-                        {t('plantDiagnosis.errorPrefix')} {errorMessage}
-                    </p>
-                </div>
-            )}
+                {isProcessing && (
+                    <div className="diagnosis-result loading-placeholder">
+                        <div className="loading-content">
+                            <p>{t('plantDiagnosis.analyzingText', 'Идет анализ изображения...')}</p>
+                            <p>{t('plantDiagnosis.analyzingHint', 'Пожалуйста, подождите')}</p>
+                        </div>
+                    </div>
+                )}
+
+                {!isProcessing && diagnosis && diagnosis.success && diagnosis.data && (
+                    <div className="diagnosis-result">
+                        <h2>{t('plantDiagnosis.resultTitle', 'Результат')}</h2>
+
+                        {classification ? (
+                            isConfident ? (
+                                <>
+                                    <h3>{t('plantDiagnosis.plantIdentified', 'Растение определено')}</h3>
+                                    <p>{classification.name}</p>
+                                    {classification.plant_details?.common_names?.length ? (
+                                        <p>
+                                            {t('plantDiagnosis.commonNames', 'Названия')}:{' '}
+                                            {classification.plant_details.common_names.join(", ")}
+                                        </p>
+                                    ) : null}
+                                    <p>
+                                        {t('plantDiagnosis.confidence', 'Уверенность')}:{' '}
+                                        {Math.round(prob * 100)}%
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <h3>{t('plantDiagnosis.notRecognizedTitle', 'Не распознано')}</h3>
+                                    <p>
+                                        {t('plantDiagnosis.notRecognizedText', 'Не удалось точно определить растение. Попробуйте другое фото.')}
+                                    </p>
+                                </>
+                            )
+                        ) : null}
+
+                        {isConfident && healthAssessment && (
+                            <div
+                                className={`health-status ${
+                                    healthAssessment.isHealthy ? 'healthy' : 'unhealthy'
+                                }`}
+                            >
+                                <h3>{t('plantDiagnosis.healthStatusTitle', 'Состояние здоровья')}</h3>
+                                <p>
+                                    {healthAssessment.isHealthy
+                                        ? t('plantDiagnosis.healthyText', 'Растение здорово')
+                                        : t('plantDiagnosis.issuesText', 'Обнаружены проблемы')}
+                                </p>
+                                {!healthAssessment.isHealthy &&
+                                healthAssessment.diseases?.length ? (
+                                    <div>
+                                        <h4>{t('plantDiagnosis.detectedIssuesTitle', 'Выявленные болезни')}</h4>
+                                        <ul>
+                                            {healthAssessment.diseases.map((disease, idx) => (
+                                                <li key={idx}>
+                                                    <span>{disease.name}</span> (
+                                                    {Math.round(disease.probability * 100)}%) -{" "}
+                                                    {disease.description ||
+                                                        t('plantDiagnosis.noDescription', 'Нет описания')}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : null}
+                            </div>
+                        )}
+
+                        <div className="save-button-container">
+                            <button
+                                className="save-result-btn"
+                                onClick={saveDiagnosis}
+                                disabled={isProcessing || isSaving}
+                            >
+                                {isSaving
+                                    ? t('plantDiagnosis.saveButtonSaving', 'Сохранение...')
+                                    : t('plantDiagnosis.saveButton', 'Сохранить результат')}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {!isProcessing && errorMessage && (
+                    <div className="error-message">
+                        <p>
+                            {t('plantDiagnosis.errorPrefix', 'Ошибка')} {errorMessage}
+                        </p>
+                    </div>
+                )}
+            </main>
         </div>
     );
 };

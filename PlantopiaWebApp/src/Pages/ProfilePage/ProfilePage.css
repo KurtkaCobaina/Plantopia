@@ -1,32 +1,150 @@
-.profile-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 24px;
-    background-color: #ffffff;
+/* Основной контейнер разметки (как в ExpertsListPage, SavedDataPage) */
+.profile-layout {
+    display: flex;
+    height: calc(100vh - 80px); /* Высота минус хедер */
+    background-color: #f3f4f6;
+    padding: 20px;
+    gap: 20px;
+    box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.profile-container > h1 {
-    margin: 0 0 24px 0;
-    color: #000;
-    font-size: 24px;
-    font-weight: 600;
-    text-align: center;
+/* --- Левая панель (Сайдбар) --- */
+.sidebar-profile {
+    width: 320px;
+    flex-shrink: 0;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.sidebar-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.nav-tab-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-tab-btn:hover {
+    background-color: #f0fdf4;
+    border-color: #5DD62C;
+    color: #5DD62C;
+}
+
+.nav-tab-btn.active {
+    background-color: #dcfce7;
+    border-color: #5DD62C;
+    color: #166534;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(93, 214, 44, 0.1);
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.user-email-preview {
+    font-size: 12px;
+    color: #9ca3af;
+    word-break: break-all;
+}
+
+/* --- Правая панель (Основной контент) --- */
+.main-profile-content {
+    flex-grow: 1;
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.content-header {
+    margin-bottom: 25px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.content-header h1 {
+    font-size: 24px;
+    margin: 0;
+    color: #111;
+}
+
+.scroll-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* --- Общие стили контента --- */
+.tab-content h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Карточка информации */
 .profile-card {
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
     border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 24px;
-    width: 100%;
+    margin-bottom: 20px;
 }
 
 .field-row {
     display: flex;
-    padding: 16px 20px;
-    border-bottom: 1px solid #f0f0f0;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f3f4f6;
     align-items: center;
 }
 
@@ -34,315 +152,191 @@
     border-bottom: none;
 }
 
-.field-label {
-    flex: 0 0 40%;
+.field-row .label {
+    color: #6b7280;
     font-weight: 500;
-    color: #555;
-    padding-right: 16px;
-    text-align: left;
-    line-height: 1.4;
 }
 
-.field-value {
-    flex: 1;
-    color: #000;
-    word-break: break-word;
+.field-row .value {
+    color: #111;
+    font-weight: 600;
+    text-align: right;
 }
 
-.subscription-row {
-    display: flex;
-    padding: 16px 20px;
-    border-bottom: 1px solid #f0f0f0;
-    align-items: center;
+.badge-role {
+    background: #f3f4f6;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    text-transform: uppercase;
 }
 
-.subscription-row .field-label {
-    flex: 0 0 40%;
-    font-weight: 500;
-    color: #555;
-    padding-right: 16px;
-    text-align: left;
-    line-height: 1.4;
-}
-
-.subscription-status {
-    flex: 1;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: 500;
-    text-align: center;
-    min-width: 80px;
-    display: inline-block;
-}
-
-.subscription-status.active {
-    background-color: transparent;
-    color: #00ff6f;
-    border: 1px solid #00ff6f;
-    padding: 7px 15px;
-}
-
-.subscription-status.inactive {
-    background-color: transparent;
-    color: #ff4d4f;
-    border: 1px solid #ff4d4f;
-    padding: 7px 15px;
-}
-
-.edit-btn {
-    display: block;
-    width: 100%;
-    background-color: #5DD62C;
-    color: #000;
-    border: none;
-    padding: 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 16px;
-    transition: background-color 0.2s;
-    margin-top: 16px;
-}
-
-.edit-btn:hover {
-    background-color: #4bc71d;
-}
-
-/* Стили для секций с ключами - ОДИНАКОВЫЕ ДЛЯ ВСЕХ */
-.api-key-section,
-.ndvi-api-key-section {
-    margin-top: 24px;
-    padding: 20px;
-    border: 1px solid #e0e0e0;
+.badge-sub {
+    padding: 4px 12px;
     border-radius: 12px;
-    background-color: #ffffff;
-}
-
-.api-key-section h2,
-.ndvi-api-key-section h2 {
-    margin: 0 0 16px 0;
-    color: #000;
-    font-size: 18px;
+    font-size: 12px;
     font-weight: 600;
 }
 
-/* Единый контейнер для всех ключей */
-.api-key-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.badge-sub.active {
+    background: #dcfce7;
+    color: #16a34a;
 }
 
-/* Единые стили для полей ввода */
-.api-input {
+.badge-sub.inactive {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Кнопка подписки */
+.sub-action-btn {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #000;
-    background-color: #fff;
-    box-sizing: border-box;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
 }
 
-.api-input:focus {
+.sub-action-btn.activate {
+    background: #5DD62C;
+    color: black;
+}
+.sub-action-btn.activate:hover { background: #4bc71d; }
+
+.sub-action-btn.deactivate {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+.sub-action-btn.deactivate:hover { background: #e5e7eb; }
+
+/* Форма редактирования */
+.edit-form {
+    max-width: 500px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.input-group input:focus {
     outline: none;
     border-color: #5DD62C;
     box-shadow: 0 0 0 2px rgba(93, 214, 44, 0.2);
 }
 
-/* Единые стили для отображения ключа */
-.api-display {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    color: #000;
-    font-family: monospace;
-    letter-spacing: 1px;
-    background-color: #fafafa;
-    box-sizing: border-box;
-    word-break: break-all;
-}
-
-/* Единые стили для кнопок */
-.api-buttons {
+.form-actions {
     display: flex;
-    gap: 12px;
-    margin-top: 8px;
+    gap: 10px;
+    margin-top: 20px;
 }
 
-.edit-api-btn,
-.save-api-btn,
-.cancel-api-btn {
+.save-btn {
     flex: 1;
-    padding: 10px 16px;
-    border-radius: 6px;
+    padding: 12px;
+    background: #5DD62C;
+    color: black;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
     cursor: pointer;
+}
+
+.cancel-btn {
+    flex: 1;
+    padding: 12px;
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Секция ключей */
+.key-section {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.key-section h3 {
+    margin: 0 0 15px 0;
     font-size: 16px;
-    font-weight: 500;
-    transition: all 0.2s;
+    color: #111;
 }
 
-.edit-api-btn {
-    background-color: #f0f0f0;
-    color: #000;
-    border: 1px solid #ddd;
+.key-input-wrapper {
+    margin-bottom: 15px;
 }
 
-.edit-api-btn:hover {
-    background-color: #e0e0e0;
+.key-input, .key-display {
+    width: 100%;
+    padding: 10px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 14px;
+    box-sizing: border-box;
 }
 
-.save-api-btn {
-    background-color: #5DD62C;
-    color: #000;
+.key-display {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
+.key-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-small {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
     border: none;
 }
 
-.save-api-btn:hover {
-    background-color: #4bc71d;
-}
+.btn-small.save { background: #5DD62C; color: black; }
+.btn-small.cancel { background: #fee2e2; color: #dc2626; }
+.btn-small.edit { background: white; border: 1px solid #d1d5db; color: #374151; }
 
-.cancel-api-btn {
-    background-color: #fff;
-    color: #666;
-    border: 1px solid #ddd;
-}
-
-.cancel-api-btn:hover {
-    background-color: #f5f5f5;
-    border-color: #999;
-}
-
-/* Адаптация для мобильных устройств */
-@media (max-width: 480px) {
-    .profile-container {
-        padding: 16px;
-    }
-
-    .field-row {
+/* Адаптивность */
+@media (max-width: 768px) {
+    .profile-layout {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
+        height: auto;
+        min-height: 100vh;
     }
-
-    .field-label {
-        flex: none;
+    .sidebar-profile {
         width: 100%;
-        padding-right: 0;
+        margin-bottom: 20px;
     }
-
-    .field-value {
-        width: 100%;
+    .main-profile-content {
+        height: auto;
+        min-height: 500px;
     }
-
-    .subscription-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .subscription-row .field-label {
-        flex: none;
-        width: 100%;
-        padding-right: 0;
-    }
-
-    .subscription-status {
-        width: auto;
-        min-width: 100px;
-    }
-
-    .api-buttons {
-        flex-direction: column;
-    }
-
-    .edit-api-btn,
-    .save-api-btn,
-    .cancel-api-btn {
-        width: 100%;
-    }
-}
-
-/* Стили для состояния загрузки */
-.profile-container:empty::before {
-    content: "Загрузка профиля...";
-    display: block;
-    text-align: center;
-    padding: 40px;
-    color: #666;
-    font-size: 16px;
-}
-
-/* Анимации */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.profile-card,
-.api-key-section,
-.ndvi-api-key-section,
-.edit-btn {
-    animation: fadeIn 0.3s ease-out;
-}
-
-/* Стили для плейсхолдера */
-.api-input::placeholder {
-    color: #999;
-    font-style: italic;
-}
-
-/* Дополнительный отступ между секциями */
-.ndvi-api-key-section {
-    margin-top: 24px;
-}
-
-/* Кнопка активации — ярко-зелёная #00ff6f */
-.subscription-activate-btn {
-    display: block;
-    width: 100%;
-    background-color: #5DD62C;
-    color: #000;
-    border: none;
-    padding: 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 16px;
-    transition: background-color 0.2s;
-    margin-top: 16px;
-}
-
-.subscription-activate-btn:hover {
-    background-color: #4bc71d;
-}
-
-/* Кнопка отмены — серая */
-.subscription-deactivate-btn {
-    display: block;
-    width: 100%;
-    background-color: #f0f0f0;
-    color: #666;
-    border: 1px solid #ddd;
-    padding: 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 16px;
-    transition: all 0.2s;
-    margin-top: 16px;
-}
-
-.subscription-deactivate-btn:hover {
-    background-color: #e0e0e0;
-    color: #333;
-    border-color: #ccc;
 }

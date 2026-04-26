@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom'; // Добавляем навигацию
 import maplibregl from 'maplibre-gl';
 import "maplibre-gl/dist/maplibre-gl.css";
 import './WeatherMapPage.css';
@@ -39,7 +40,9 @@ interface DayGroup {
 }
 
 const WeatherMapPage = () => {
+    const navigate = useNavigate();
     const { t } = useI18n();
+
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maplibregl.Map | null>(null);
     const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -110,8 +113,6 @@ const WeatherMapPage = () => {
         return () => { if (mapRef.current) mapRef.current.remove(); };
     }, []);
 
-
-
     const fetchWeather = async () => {
         if (!selectedLocation) return;
         setLoadingWeather(true);
@@ -126,8 +127,6 @@ const WeatherMapPage = () => {
 
             const h = data.hourly;
             const times = h.time || [];
-
-            // Convert raw arrays into an array of objects (one per hour)
 
             // @ts-ignore
             const parsedHours: HourlyDataPoint[] = times.map((timeStr: string, idx: number) => {
@@ -195,63 +194,81 @@ const WeatherMapPage = () => {
         : [];
 
     return (
-        <div className="weather-map-page">
-            <div className="weather-header">
-                <h2>{t('weather.title', 'Прогноз погоды')}</h2>
-                <p className="instruction">{t('weather.instruction', 'Выберите точку на карте.')}</p>
-            </div>
+        <div className="weather-layout">
 
-            <div className="weather-content">
-                {/* Left Column: Map and Day List */}
-                <div className="map-column">
-                    <div className="map-wrapper">
-                        <div ref={mapContainerRef} className="weather-map-container" />
-                        {selectedLocation && (
-                            <div className="coords-display">
-                                <span>📍 {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}</span>
-                                <button onClick={fetchWeather} disabled={loadingWeather} className="fetch-weather-btn">
-                                    {loadingWeather ? t('common.loading', 'Загрузка...') : t('weather.fetchButton', 'Загрузить прогноз')}
-                                </button>
+            {/* ЛЕВАЯ ПАНЕЛЬ (САЙДБАР) */}
+            <aside className="sidebar-weather">
+                <div className="sidebar-header">
+                    <button onClick={() => navigate('/')} className="btn-icon">←</button>
+                    <h2>{t('weather.sidebarTitle', 'Погода')}</h2>
+                </div>
+
+
+
+                <div className="sidebar-info">
+                    <p>{t('weather.hint', 'Выберите точку на карте для получения детального агро-прогноза.')}</p>
+                </div>
+            </aside>
+
+            {/* ОСНОВНОЙ КОНТЕНТ */}
+            <main className="main-weather-content">
+
+                <div className="weather-content-inner">
+                    {/* Left Column: Map and Day List */}
+                    <div className="map-column">
+                        <div className="map-wrapper">
+                            <div ref={mapContainerRef} className="weather-map-container" />
+                            {selectedLocation && (
+                                <div className="coords-display">
+                                    <span>📍 {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}</span>
+                                    <button onClick={fetchWeather} disabled={loadingWeather} className="fetch-weather-btn">
+                                        {loadingWeather ? t('common.loading', 'Загрузка...') : t('weather.fetchButton', 'Загрузить прогноз')}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* List of Days */}
+                        {daysList.length > 0 && (
+                            <div className="days-list-container">
+                                <h3>{t('weather.availableDays', 'Доступные дни')}</h3>
+                                <div className="days-list">
+                                    {daysList.map((day) => (
+                                        <button
+                                            key={day.dateKey}
+                                            className={`day-item ${selectedDateKey === day.dateKey ? 'active' : ''}`}
+                                            onClick={() => setSelectedDateKey(day.dateKey)}
+                                        >
+                                            {day.displayDate}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
 
-                    {/* List of Days */}
-                    {daysList.length > 0 && (
-                        <div className="days-list-container">
-                            <h3>{t('weather.availableDays', 'Доступные дни')}</h3>
-                            <div className="days-list">
-                                {daysList.map((day) => (
-                                    <button
-                                        key={day.dateKey}
-                                        className={`day-item ${selectedDateKey === day.dateKey ? 'active' : ''}`}
-                                        onClick={() => setSelectedDateKey(day.dateKey)}
-                                    >
-                                        {day.displayDate}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    {/* Right Column: Hourly Details for Selected Day */}
+                    <div className="details-column">
+                        {error && <div className="error-msg">{error}</div>}
+
+                        {loadingWeather && (
+                            <div className="loading-state">{t('common.loading', 'Обработка данных...')}</div>
+                        )}
+
+                        {!loadingWeather && currentDayHours.length > 0 && (
+                            <WeatherDayDetail hours={currentDayHours} />
+                        )}
+
+                        {!loadingWeather && allHours.length > 0 && currentDayHours.length === 0 && (
+                            <div className="no-data-message">{t('weather.selectDay', 'Выберите день из списка слева')}</div>
+                        )}
+
+                        {!loadingWeather && allHours.length === 0 && !error && (
+                            <div className="no-data-message">{t('weather.instruction', 'Выберите точку на карте и нажмите "Загрузить прогноз"')}</div>
+                        )}
+                    </div>
                 </div>
-
-                {/* Right Column: Hourly Details for Selected Day */}
-                <div className="details-column">
-                    {error && <div className="error-msg">{error}</div>}
-
-                    {loadingWeather && (
-                        <div className="loading-state">{t('common.loading', 'Обработка данных...')}</div>
-                    )}
-
-                    {!loadingWeather && currentDayHours.length > 0 && (
-                        <WeatherDayDetail hours={currentDayHours} />
-                    )}
-
-                    {!loadingWeather && allHours.length > 0 && currentDayHours.length === 0 && (
-                        <div className="no-data-message">{t('weather.selectDay', 'Выберите день из списка слева')}</div>
-                    )}
-                </div>
-            </div>
+            </main>
         </div>
     );
 };

@@ -84,9 +84,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onDateClick }) => {
     return (
         <div className="calendar-container">
             <div className="calendar-header">
-                <button onClick={prevMonth} className="nav-btn">&lt;</button>
+                <button onClick={prevMonth} className="nav-btn2">&lt;</button>
                 <h3>{monthNames[month]} {year}</h3>
-                <button onClick={nextMonth} className="nav-btn">&gt;</button>
+                <button onClick={nextMonth} className="nav-btn2">&gt;</button>
             </div>
             <div className="calendar-weekdays">
                 <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>

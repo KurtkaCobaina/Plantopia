@@ -21,8 +21,15 @@ interface LoginResponse {
     token?: string;
     apiKey?: string;
     message?: string;
-
     ndvi_api_key?: string;
+
+    // --- НОВЫЕ ПОЛЯ ДЛЯ ЭКСПЕРТА ---
+    specialization?: string;
+    experienceYears?: number;
+    hourlyRate?: number;
+    country?: string;
+    region?: string;
+    city?: string;
 }
 
 interface ErrorResponse {
@@ -31,16 +38,18 @@ interface ErrorResponse {
     errors?: Record<string, string[]>;
 }
 
-interface LoginPageProps {
-    onLoginSuccess?: () => void;
-}
+type UserRole = 'farmer' | 'expert';
 
-const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
+const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    // Состояние для переключения роли
+    const [activeRole, setActiveRole] = useState<UserRole>('farmer');
+
     const navigate = useNavigate();
     const { refresh } = useAuth();
     const { t } = useI18n();
@@ -56,7 +65,12 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                 password
             };
 
-            const response = await fetch('http://localhost:5243/api/Auth/login', {
+            // Выбираем эндпоинт в зависимости от выбранной роли
+            const endpoint = activeRole === 'expert'
+                ? 'http://localhost:5243/api/Auth/expert-login'
+                : 'http://localhost:5243/api/Auth/login';
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -64,7 +78,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                 body: JSON.stringify(loginData),
             });
 
-            let data: LoginResponse | ErrorResponse = await response.json();
+            const data: LoginResponse | ErrorResponse = await response.json();
 
             if (!response.ok) {
                 let errorMessage = t('login.error.default', 'Ошибка авторизации');
@@ -81,7 +95,6 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                         }
                     }
                 }
-
                 throw new Error(errorMessage);
             }
 
@@ -90,10 +103,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             // Сохраняем данные авторизации
             const storage = rememberMe ? localStorage : sessionStorage;
 
-            if (loginDataResponse.token) {
-                storage.setItem('authToken', loginDataResponse.token);
-            } else if (loginDataResponse.sessionId) {
-                // Если токена нет, используем sessionId как "токен" для проверки
+            if (loginDataResponse.sessionId) {
                 storage.setItem('sessionId', loginDataResponse.sessionId);
             }
 
@@ -115,9 +125,11 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             if (loginDataResponse.subscriptionStatus !== undefined) {
                 storage.setItem('userSubscriptionStatus', String(loginDataResponse.subscriptionStatus));
             }
-            if (loginDataResponse.userRole) {
-                storage.setItem('userRole', loginDataResponse.userRole);
-            }
+
+            // Определяем финальную роль
+            const finalRole = loginDataResponse.userRole || (activeRole === 'expert' ? 'expert' : 'farmer');
+            storage.setItem('userRole', finalRole);
+
             if (loginDataResponse.apiKey) {
                 storage.setItem('apiKey', loginDataResponse.apiKey);
             }
@@ -125,16 +137,40 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                 storage.setItem('ndvi_api_key', loginDataResponse.ndvi_api_key);
             }
 
+            // --- СОХРАНЕНИЕ ДАННЫХ ЭКСПЕРТА ---
+            if (finalRole === 'expert') {
+                if (loginDataResponse.specialization) {
+                    storage.setItem('expertSpecialization', loginDataResponse.specialization);
+                }
+                if (loginDataResponse.experienceYears !== undefined) {
+                    storage.setItem('expertExperienceYears', loginDataResponse.experienceYears.toString());
+                }
+                if (loginDataResponse.hourlyRate !== undefined) {
+                    storage.setItem('expertHourlyRate', loginDataResponse.hourlyRate.toString());
+                }
+                if (loginDataResponse.country) {
+                    storage.setItem('expertCountry', loginDataResponse.country);
+                }
+                if (loginDataResponse.region) {
+                    storage.setItem('expertRegion', loginDataResponse.region);
+                }
+                if (loginDataResponse.city) {
+                    storage.setItem('expertCity', loginDataResponse.city);
+                }
+            }
+            // ----------------------------------
+
             // Обновляем контекст аутентификации
             refresh();
 
-            // Вызываем колбэк об успешной авторизации
-            if (onLoginSuccess) {
-                onLoginSuccess();
+            // --- ЖЕСТКИЙ РЕДИРЕКТ В ЗАВИСИМОСТИ ОТ РОЛИ ---
+            if (finalRole === 'expert') {
+                console.log("Редирект эксперта на /expert-dashboard");
+                navigate('/expert-dashboard', { replace: true });
+            } else {
+                console.log("Редирект фермера на /");
+                navigate('/', { replace: true });
             }
-
-            // Перенаправляем на главную страницу
-            navigate('/');
 
         } catch (err) {
             console.error('Login error:', err);
@@ -151,8 +187,26 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     return (
         <div className="login-container">
             <div className="login-form-container">
+                {/* Переключатель ролей */}
+                <div className="role-switcher">
+                    <button
+                        className={`role-btn ${activeRole === 'farmer' ? 'active' : ''}`}
+                        onClick={() => setActiveRole('farmer')}
+                    >
+                        Фермер
+                    </button>
+                    <button
+                        className={`role-btn ${activeRole === 'expert' ? 'active' : ''}`}
+                        onClick={() => setActiveRole('expert')}
+                    >
+                        Эксперт
+                    </button>
+                </div>
+
                 <h1 className="login-title">
-                    {t('login.title', 'Вход в систему')}
+                    {activeRole === 'farmer'
+                        ? t('login.title.farmer', 'Вход для фермера')
+                        : t('login.title.expert', 'Вход для эксперта')}
                 </h1>
 
                 {error && (
