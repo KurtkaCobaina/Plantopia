@@ -271,7 +271,40 @@
     background: #fee2e2;
     border-radius: 8px;
 }
+/* ... существующие стили ... */
 
+/* Стили для кнопок сортировки */
+.sort-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: flex-end; /* Выравнивание по правому краю */
+}
+
+.sort-btn {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #555;
+    transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+    background-color: #f9fafb;
+    border-color: #ccc;
+}
+
+.sort-btn.active {
+    background-color: #5DD62C;
+    color: black;
+    border-color: #5DD62C;
+    font-weight: 600;
+}
+
+/* ... остальные стили ... */
 /* Адаптивность */
 @media (max-width: 768px) {
     .saved-data-layout {

@@ -271,12 +271,16 @@ const LoginPage = () => {
                 <div className="login-footer">
                     <p>
                         {t('login.noAccount', 'Нет аккаунта?')}{' '}
-                        <a href="/register">
-                            {t('login.registerLink', 'Зарегистрироваться')}
+                        {/* ДИНАМИЧЕСКАЯ ССЫЛКА НА РЕГИСТРАЦИЮ */}
+                        <a href={activeRole === 'expert' ? "/register-expert" : "/register"}>
+                            {activeRole === 'expert'
+                                ? t('login.registerLink.expert', 'Зарегистрироваться как эксперт')
+                                : t('login.registerLink', 'Зарегистрироваться')}
                         </a>
                     </p>
                     <p>
-                        <a href="/forgot-password">
+                        {/* ДИНАМИЧЕСКАЯ ССЫЛКА НА ВОССТАНОВЛЕНИЕ ПАРОЛЯ */}
+                        <a href={activeRole === 'expert' ? "/forgot-password-expert" : "/forgot-password"}>
                             {t('login.forgotPassword', 'Забыли пароль?')}
                         </a>
                     </p>

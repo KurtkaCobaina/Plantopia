@@ -1,89 +1,230 @@
-/* Наследуем основные стили контейнера из ExpertsListPage.css, если они глобальные,
-   или копируем их сюда, если нет. Здесь предполагаем, что .experts-container уже существует. */
+/* =========================================
+   ОСНОВНОЙ ЛЕЙАУТ СТРАНИЦЫ
+   ========================================= */
 
-/* Стили для блока статистики в сайдбаре */
-.stats-block {
-    background: #f9fafb;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
+.experts-container {
+    display: flex;
+    height: calc(100vh - 80px); /* Высота экрана минус высота хедера */
+    background-color: #f3f4f6;
+    padding: 20px;
+    gap: 20px;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow: hidden; /* Запрещаем скролл всей страницы */
+}
+
+/* =========================================
+   ЛЕВАЯ ПАНЕЛЬ (САЙДБАР)
+   ========================================= */
+
+.sidebar-filters {
+    width: 320px;
+    flex-shrink: 0;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
+    overflow-y: auto; /* Скролл внутри сайдбара, если меню длинное */
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
     gap: 10px;
+    margin-bottom: 20px;
+}
+
+.sidebar-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.btn-icon:hover {
+    color: #111;
+}
+
+/* Навигация в сайдбаре */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.nav-item {
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-item:hover {
+    background-color: #f0fdf4;
+    color: #5DD62C;
+}
+
+.nav-item.active {
+    background-color: #dcfce7;
+    color: #166534;
+    font-weight: 600;
+}
+
+.expert-info-mini {
+    margin-bottom: 15px;
+}
+
+.role-badge {
+    display: inline-block;
+    background: #f3f4f6;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: capitalize;
+}
+
+/* Блок статистики (прижат к низу сайдбара) */
+.stats-block {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
 }
 
 .stat-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    margin-bottom: 10px;
     font-size: 14px;
 }
 
 .stat-value {
     font-weight: 700;
-    font-size: 16px;
-    color: #333;
+    color: #111;
+}
+
+.stat-label {
+    color: #6b7280;
 }
 
 .stat-item.highlight .stat-value {
-    color: #d97706; /* Оранжевый для ожидающих */
+    color: #5DD62C;
 }
 
-.filter-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: #555;
-    margin-bottom: 5px;
-}
+/* =========================================
+   ПРАВАЯ ПАНЕЛЬ (ОСНОВНОЙ КОНТЕНТ)
+   ========================================= */
 
-.status-select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
+.main-content {
+    flex-grow: 1;
     background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* ВАЖНО: Скрываем переполнение, чтобы скроллился только внутренний блок */
+    position: relative;
 }
 
-/* Список консультаций */
+.content-header {
+    margin-bottom: 20px;
+    flex-shrink: 0; /* Заголовок не сжимается и всегда виден */
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.content-header h1 {
+    font-size: 24px;
+    margin: 0 0 5px 0;
+    color: #111;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* =========================================
+   ОБЛАСТЬ ПРОКРУТКИ (СКРОЛЛ)
+   ========================================= */
+
+.experts-scroll-area {
+    flex-grow: 1; /* Занимает всё оставшееся вертикальное пространство */
+    overflow-y: auto; /* ВКЛЮЧАЕТ ВЕРТИКАЛЬНУЮ ПРОКРУТКУ ДЛЯ ЭТОГО БЛОКА */
+    padding-right: 10px; /* Отступ справа, чтобы контент не прилипал к скроллбару */
+
+    /* Стилизация скроллбара (Webkit: Chrome, Safari, Edge) */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.experts-scroll-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.experts-scroll-area::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.experts-scroll-area::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+}
+
+.experts-scroll-area::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
+/* =========================================
+   КАРТОЧКИ КОНСУЛЬТАЦИЙ
+   ========================================= */
+
 .consultations-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
+    padding-bottom: 20px; /* Отступ снизу для последнего ряда карточек */
 }
 
 .consultation-card {
-    background: white;
+    background: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
+    transition: all 0.2s ease;
 }
 
 .consultation-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     border-color: #5DD62C;
+    box-shadow: 0 4px 12px rgba(93, 214, 44, 0.1);
+    transform: translateY(-2px);
 }
-
-/* Цветная полоска слева в зависимости от статуса */
-.consultation-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-}
-
-.consultation-card.pending::before { background: #f59e0b; }
-.consultation-card.confirmed::before { background: #10b981; }
-.consultation-card.completed::before { background: #6b7280; }
-.consultation-card.cancelled::before { background: #ef4444; }
 
 .card-header {
     display: flex;
@@ -91,89 +232,366 @@
     align-items: center;
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #f3f4f6;
 }
 
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .status-badge.pending { background: #fef3c7; color: #d97706; }
-.status-badge.confirmed { background: #d1fae5; color: #059669; }
-.status-badge.completed { background: #f3f4f6; color: #4b5563; }
+.status-badge.confirmed { background: #dbeafe; color: #2563eb; }
+.status-badge.completed { background: #dcfce7; color: #16a34a; }
 .status-badge.cancelled { background: #fee2e2; color: #dc2626; }
 
 .date {
-    font-size: 13px;
-    color: #666;
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 500;
 }
 
 .card-body {
     flex-grow: 1;
-    margin-bottom: 15px;
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.5;
 }
 
 .info-row {
-    font-size: 14px;
-    margin-bottom: 6px;
-    color: #444;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .info-row strong {
     color: #111;
-    margin-right: 5px;
+    font-weight: 600;
 }
 
 .info-row.price {
     font-size: 16px;
-    font-weight: 600;
-    color: #5DD62C;
+    font-weight: 700;
+    color: #111;
     margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e5e7eb;
 }
 
 .card-actions {
+    margin-top: 15px;
     display: flex;
     gap: 10px;
-    margin-top: auto;
+    flex-wrap: wrap;
 }
 
 .btn-small {
     flex: 1;
-    padding: 8px;
+    padding: 8px 12px;
     border: none;
     border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
+    text-align: center;
     transition: background 0.2s;
+    min-width: 80px;
 }
 
-.btn-confirm {
-    background: #dcfce7;
-    color: #16a34a;
-}
+.btn-confirm { background: #dcfce7; color: #166534; }
 .btn-confirm:hover { background: #bbf7d0; }
 
-.btn-cancel {
-    background: #fee2e2;
-    color: #dc2626;
-}
+.btn-cancel { background: #fee2e2; color: #991b1b; }
 .btn-cancel:hover { background: #fecaca; }
 
-.btn-complete {
-    background: #5DD62C;
-    color: black;
-    width: 100%;
-}
-.btn-complete:hover { background: #4bc71d; }
+.btn-complete { background: #dbeafe; color: #1e40af; }
+.btn-complete:hover { background: #bfdbfe; }
 
 .action-disabled {
     font-size: 12px;
     color: #9ca3af;
+    font-style: italic;
     width: 100%;
     text-align: center;
+    margin-top: 5px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+    font-style: italic;
+    font-size: 16px;
+}
+
+/* =========================================
+   ТАБЛИЦЫ ДАННЫХ (КУЛЬТУРЫ / ПОЧВЫ)
+   ========================================= */
+
+.data-management-container {
+    width: 100%;
+}
+
+.data-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.data-header h2 {
+    font-size: 18px;
+    color: #111;
+    margin: 0;
+}
+
+.add-btn {
+    background: #5DD62C;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.add-btn:hover {
+    background: #4bc71d;
+}
+
+.data-table-wrapper {
+    width: 100%;
+    overflow-x: auto; /* Горизонтальный скролл для таблицы на маленьких экранах */
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* Минимальная ширина, чтобы таблица не сжималась в кашу */
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.data-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+    position: sticky; /* Закрепляем заголовок таблицы при вертикальном скролле страницы */
+    top: 0;
+    z-index: 5;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tr:hover {
+    background-color: #f9fafb;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 8px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.icon-btn.edit { color: #3b82f6; }
+.icon-btn.edit:hover { background: #eff6ff; }
+
+.icon-btn.delete { color: #ef4444; }
+.icon-btn.delete:hover { background: #fef2f2; }
+
+/* =========================================
+   МОДАЛЬНЫЕ ОКНА
+   ========================================= */
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-height: 90vh; /* Ограничиваем высоту модалки */
+    overflow-y: auto; /* Скролл внутри модалки, если форма длинная */
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 20px;
+    color: #111;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-form input {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.modal-form input:focus {
+    outline: none;
+    border-color: #5DD62C;
+    box-shadow: 0 0 0 2px rgba(93, 214, 44, 0.2);
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+}
+
+.form-row > * {
+    flex: 1;
+}
+
+.form-row label {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.form-row input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.cancel-btn {
+    background: #f3f4f6;
+    color: #374151;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+    background: #e5e7eb;
+}
+
+.save-btn {
+    background: #5DD62C;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.save-btn:hover {
+    background: #4bc71d;
+}
+
+/* =========================================
+   АДАПТИВНОСТЬ (МОБИЛЬНЫЕ УСТРОЙСТВА)
+   ========================================= */
+
+@media (max-width: 768px) {
+    .experts-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        padding: 10px;
+    }
+
+    .sidebar-filters {
+        width: 100%;
+        margin-bottom: 15px;
+        height: auto;
+        max-height: none; /* Разрешаем сайдбару расти */
+        padding: 15px;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .nav-item {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .stats-block {
+        display: none; /* Скрываем статистику на мобильных для экономии места */
+    }
+
+    .main-content {
+        height: calc(100vh - 250px); /* Фиксируем высоту контента на мобильном */
+        padding: 15px;
+    }
+
+    .content-header h1 {
+        font-size: 20px;
+    }
+
+    .consultations-list {
+        grid-template-columns: 1fr; /* Одна колонка на мобильных */
+    }
 }

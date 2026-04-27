@@ -8,12 +8,17 @@ import MainPage from './Pages/MainPage/MainPage.tsx';
 import ExpertDashboardPage from './Pages/ExpertDashboard/ExpertDashboardPage.tsx';
 import PlantDiagnosis from './Functions/Function 1/PlantDiagnosis';
 import ProfilePage from './Pages/ProfilePage/ProfilePage';
-
 import SavedDataPage from "./Pages/SavedDataPage/SavedDataPage.tsx";
 
+// Auth Pages
 import LoginPage from './Pages/LoginPage/LoginPage.tsx';
-import RegisterPage from './Pages/RegisterPage/RegisterPage.tsx';
-import ForgotPasswordPage from './Pages/ForgotPasswordPage/ForgotPasswordPage.tsx';
+import RegisterPage from './Pages/RegisterPages/RegisterPage.tsx';
+import ExpertRegistPage from './Pages/RegisterPages/ExpertRegistPage.tsx';
+import ForgotPasswordPage from './Pages/ForgotPasswordPages/ForgotPasswordPage.tsx';
+// ИМПОРТ НОВОЙ СТРАНИЦЫ ВОССТАНОВЛЕНИЯ ПАРОЛЯ ЭКСПЕРТА
+import ExpertForgotPasswordPage from './Pages/ForgotPasswordPages/ExpertForgotPasswordPage.tsx';
+
+// Functions / Features
 import TasksListPage from './Functions/Function 5/TasksListPage';
 import CreateTaskPage from './Functions/Function 5/CreateTaskPage';
 import NDVIPage from "./Functions/Function 4/NDVIPage";
@@ -22,46 +27,36 @@ import WeatherMapPage from "./Functions/Function 3/WeatherMapPage.tsx";
 import ExpertsListPage from "./Functions/Function 6/ExpertsListPage.tsx";
 
 // --- КОМПОНЕНТЫ ЗАЩИТЫ ПО РОЛЯМ ---
+// ... (код FarmerOnlyRoute, ExpertOnlyRoute, PublicRoute, ProtectedRoute остается без изменений) ...
 
 const FarmerOnlyRoute = ({ children }: { children: React.ReactNode }) => {
     const { isAuthenticated } = useAuth();
     const userRole = sessionStorage.getItem('userRole');
-
-    if (!isAuthenticated()) {
-        return <Navigate to="/login" replace />;
-    }
-
-    // Если пользователь авторизован, но он ЭКСПЕРТ, кидаем его на дашборд эксперта
-    if (userRole === 'expert') {
-        return <Navigate to="/expert-dashboard" replace />;
-    }
-
+    if (!isAuthenticated()) return <Navigate to="/login" replace />;
+    if (userRole === 'expert') return <Navigate to="/expert-dashboard" replace />;
     return <>{children}</>;
 };
 
 const ExpertOnlyRoute = ({ children }: { children: React.ReactNode }) => {
     const { isAuthenticated } = useAuth();
     const userRole = sessionStorage.getItem('userRole');
-
-    if (!isAuthenticated()) {
-        return <Navigate to="/login" replace />;
-    }
-
-    // Если пользователь авторизован, но он НЕ эксперт, кидаем его на главную
-    if (userRole !== 'expert') {
-        return <Navigate to="/" replace />;
-    }
-
+    if (!isAuthenticated()) return <Navigate to="/login" replace />;
+    if (userRole !== 'expert') return <Navigate to="/" replace />;
     return <>{children}</>;
 };
 
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     const { isAuthenticated } = useAuth();
     if (isAuthenticated()) {
-        // Если уже авторизован, редиректим в зависимости от роли
         const userRole = sessionStorage.getItem('userRole');
         return <Navigate to={userRole === 'expert' ? "/expert-dashboard" : "/"} replace />;
     }
+    return <>{children}</>;
+};
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    const { isAuthenticated } = useAuth();
+    if (!isAuthenticated()) return <Navigate to="/login" replace />;
     return <>{children}</>;
 };
 
@@ -70,74 +65,35 @@ function AppContent() {
 
     const handleLogout = () => {
         const keys = [
-            'authToken',
-            'sessionId',
-            'userId',
-            'userEmail',
-            'userFirstName',
-            'userLastName',
-            'userRole',
-            'userPhone',
-            'userSubscriptionStatus',
-            'apiKey',
-            'bis_data',
-            'ndvi_api_key',
-            'language',
-            // --- НОВЫЕ КЛЮЧИ ЭКСПЕРТА ---
-            'expertSpecialization',
-            'expertExperienceYears',
-            'expertHourlyRate',
-            'expertCountry',
-            'expertRegion',
-            'expertCity'
-            // -----------------------------
+            'authToken', 'sessionId', 'userId', 'userEmail', 'userFirstName', 'userLastName', 'userRole',
+            'userPhone', 'userSubscriptionStatus', 'apiKey', 'bis_data', 'ndvi_api_key', 'language',
+            'expertSpecialization', 'expertExperienceYears', 'expertHourlyRate', 'expertCountry', 'expertRegion', 'expertCity'
         ];
-
         keys.forEach(key => {
             localStorage.removeItem(key);
             sessionStorage.removeItem(key);
         });
-
         refresh();
         window.location.href = '/login';
     };
+
     return (
         <Router>
             {isAuthenticated() && <Header onLogout={handleLogout} />}
             <Routes>
-                {/* Главная страница ТОЛЬКО для ФЕРМЕРОВ */}
-                <Route path="/" element={
-                    <FarmerOnlyRoute>
-                        <MainPage />
-                    </FarmerOnlyRoute>
-                } />
+                <Route path="/" element={<FarmerOnlyRoute><MainPage /></FarmerOnlyRoute>} />
+                <Route path="/expert-dashboard" element={<ExpertOnlyRoute><ExpertDashboardPage /></ExpertOnlyRoute>} />
 
-                {/* Дашборд ТОЛЬКО для ЭКСПЕРТОВ */}
-                <Route path="/expert-dashboard" element={
-                    <ExpertOnlyRoute>
-                        <ExpertDashboardPage />
-                    </ExpertOnlyRoute>
-                } />
+                <Route path="/login" element={<PublicRoute><LoginPage onLoginSuccess={refresh} /></PublicRoute>} />
 
-                <Route path="/login" element={
-                    <PublicRoute>
-                        <LoginPage onLoginSuccess={refresh} />
-                    </PublicRoute>
-                } />
+                <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+                <Route path="/register-expert" element={<PublicRoute><ExpertRegistPage /></PublicRoute>} />
 
-                <Route path="/register" element={
-                    <PublicRoute>
-                        <RegisterPage />
-                    </PublicRoute>
-                } />
+                <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
 
-                <Route path="/forgot-password" element={
-                    <PublicRoute>
-                        <ForgotPasswordPage />
-                    </PublicRoute>
-                } />
+                {/* НОВЫЙ МАРШРУТ ДЛЯ ВОССТАНОВЛЕНИЯ ПАРОЛЯ ЭКСПЕРТА */}
+                <Route path="/forgot-password-expert" element={<PublicRoute><ExpertForgotPasswordPage /></PublicRoute>} />
 
-                {/* Остальные защищенные маршруты (доступны всем авторизованным, но лучше добавить проверки ролей при необходимости) */}
                 <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                 <Route path="/saved" element={<ProtectedRoute><SavedDataPage /></ProtectedRoute>} />
                 <Route path="/calculator" element={<ProtectedRoute><FertilizerCalculatorPage /></ProtectedRoute>} />
@@ -148,9 +104,6 @@ function AppContent() {
                 <Route path="/ndvi-maps" element={<ProtectedRoute><NDVIPage /></ProtectedRoute>} />
                 <Route path="/experts-marketplace" element={<ProtectedRoute><ExpertsListPage /></ProtectedRoute>} />
 
-
-
-                {/* Catch-all: перенаправление в зависимости от роли */}
                 <Route path="*" element={
                     <Navigate to={
                         isAuthenticated()
@@ -162,15 +115,6 @@ function AppContent() {
         </Router>
     );
 }
-
-// Вспомогательный компонент для общей защиты (если не нужна проверка роли)
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    const { isAuthenticated } = useAuth();
-    if (!isAuthenticated()) {
-        return <Navigate to="/login" replace />;
-    }
-    return <>{children}</>;
-};
 
 function App() {
     return (

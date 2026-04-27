@@ -1,4 +1,4 @@
-// src/Pages/Auth/RegisterPage.tsx
+// src/Pages/Auth/RegisterPages.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './RegisterPage.css';
